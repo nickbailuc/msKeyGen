@@ -3,7 +3,7 @@
 ##  Author = "Nick Bailuc"
 ##  Copyright = "Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>"
 ##  License = "GNU General Public License, version 3 or later"
-##	"Windows 95 Product Key Generator" (Version 0.31)
+##	"Windows 95 Product Key Generator" (Version 0.32)
 ##
 ##  There are 41713826857560 valid Product Key's for Windows 95. This program
 ##  uses Bash's $RANDOM variable in a sequence until it finds appropriate keys.
@@ -22,7 +22,7 @@
 ##  You should have received a copy of the GNU General Public License
 ##  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
-VERSION=0.31
+VERSION=0.32
 
 generate()
 {
@@ -30,7 +30,7 @@ generate()
 	D=$RANDOM
 	while (( D > 365 ))
 	do
-		D=$(( $RANDOM % 366 ))
+		D=$(( RANDOM % 366 ))
 	done
 	D=$(( D + 1))
 	if (( D < 10))
@@ -45,7 +45,7 @@ generate()
 	Y=$RANDOM
 	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
 	do
-		Y=$(( $RANDOM % 100 ))
+		Y=$(( RANDOM % 100 ))
 	done
 	if (( Y < 4 ))
 	then
@@ -56,20 +56,20 @@ generate()
 	a=0; b=0; c=0; d=0; e=0; f=1
 	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
 	do
-		a=$(( $RANDOM % 10 ))
-		b=$(( $RANDOM % 10 ))
-		c=$(( $RANDOM % 10 ))
-		d=$(( $RANDOM % 10 ))
-		e=$(( $RANDOM % 10 ))
-		f=$(( $RANDOM % 10 ))
+		a=$(( RANDOM % 10 ))
+		b=$(( RANDOM % 10 ))
+		c=$(( RANDOM % 10 ))
+		d=$(( RANDOM % 10 ))
+		e=$(( RANDOM % 10 ))
+		f=$(( RANDOM % 10 ))
 	done
 
 	# 5-digit "random" group:
-	r1=$(( $RANDOM % 10 ))
-	r2=$(( $RANDOM % 10 ))
-	r3=$(( $RANDOM % 10 ))
-	r4=$(( $RANDOM % 10 ))
-	r5=$(( $RANDOM % 10 ))
+	r1=$(( RANDOM % 10 ))
+	r2=$(( RANDOM % 10 ))
+	r3=$(( RANDOM % 10 ))
+	r4=$(( RANDOM % 10 ))
+	r5=$(( RANDOM % 10 ))
 
 	# Export Product Key:
 	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\n"
@@ -87,7 +87,7 @@ generate_debug()
 	D=$RANDOM
 	while (( D > 365 ))
 	do
-		D=$(( $RANDOM % 366 ))
+		D=$(( RANDOM % 366 ))
 		printf "\tTrying $D\n"
 	done
 	D=$(( D + 1))
@@ -105,7 +105,7 @@ generate_debug()
 	printf "Determining 2-digit year:${c2}\n"
 	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
 	do
-		Y=$(( $RANDOM % 100 ))
+		Y=$(( RANDOM % 100 ))
 		printf "\tTrying $Y\n"
 	done
 	if (( Y < 4 ))
@@ -119,12 +119,12 @@ generate_debug()
 	a=0; b=0; c=0; d=0; e=0; f=1
 	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
 	do
-		a=$(( $RANDOM % 10 ))
-		b=$(( $RANDOM % 10 ))
-		c=$(( $RANDOM % 10 ))
-		d=$(( $RANDOM % 10 ))
-		e=$(( $RANDOM % 10 ))
-		f=$(( $RANDOM % 10 ))
+		a=$(( RANDOM % 10 ))
+		b=$(( RANDOM % 10 ))
+		c=$(( RANDOM % 10 ))
+		d=$(( RANDOM % 10 ))
+		e=$(( RANDOM % 10 ))
+		f=$(( RANDOM % 10 ))
 		printf "\ta = $a\n\tb = $b\n\tc = $c\n\td = $d\n\te = $e\n\tf = $f\n"
 		printf "\tLinear combination equals $((100000*a + 10000*b + 1000*c + 100*d + 10*e + f))\n"
 	done
@@ -132,11 +132,11 @@ generate_debug()
 
 	# 5-digit "random" group:
 	printf "Determining 5-digit group:${c2}\n"
-	r1=$(( $RANDOM % 10 ))
-	r2=$(( $RANDOM % 10 ))
-	r3=$(( $RANDOM % 10 ))
-	r4=$(( $RANDOM % 10 ))
-	r5=$(( $RANDOM % 10 ))
+	r1=$(( RANDOM % 10 ))
+	r2=$(( RANDOM % 10 ))
+	r3=$(( RANDOM % 10 ))
+	r4=$(( RANDOM % 10 ))
+	r5=$(( RANDOM % 10 ))
 	printf "\tr1 = $r1\n\tr2 = $r2\n\tr3 = $r3\n\tr4 = $r4\n\tr5 = $r5\n"
 	printf "5-digit group determined to be $r1$r2$r3$r4$r5!\n\n"
 
@@ -147,7 +147,7 @@ generate_debug()
 
 main()
 {
-	if [[ $ARG2 == "-d" ]]
+	if [[ $ARG1 == "-d" ]] || [[ $ARG1 == "--debug" ]]
 	then
 		generate_debug
 		exit 0
@@ -155,21 +155,21 @@ main()
 		if [[ $ARG1 -eq "" ]]
 		then
 			i=1
-			if [[ $ARG2 != "-s" ]]
+			if [[ $ARG2 != "-s" ]] && [[ $ARG2 != "--silent" ]]
 			then
 				printf "Windows 95 Product Key #$i:\t"
 			fi
 			generate
 			exit 0
-		elif (( $ARG1 < 1 ))
+		elif (( ARG1 < 1 ))
 		then
-			printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n"
+			printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n" >&2
 			exit 1
 		else
 			i=1
-			while (( i <= $ARG1 ))
+			while (( i <= ARG1 ))
 			do
-				if [[ $ARG2 != "-s" ]]
+				if [[ $ARG2 != "-s" ]] && [[ $ARG2 != "--silent" ]]
 				then
 					printf "Windows 95 Product Key #$i:\t"
 				fi
@@ -178,9 +178,6 @@ main()
 			done
 			exit 0
 		fi
-
-		printf "End of script!\n"
-		exit 2
 	fi
 }
 
@@ -188,12 +185,12 @@ main()
 ARG1=$1
 ARG2=$2
 main
+printf "End of script error!\n" >&2
+exit 2
 
 # Exit Codes:
 #	0 : Success
-#	1 : Invalid number of keys entry
+#	1 : Invalid argument: number of keys
 #	2 : End of script!
 
-#TODO arguments: -s only output keys, -f save to file
 #TODO: add validator
-#TODO: GNU-style arguments DONT WORK FOR SOME REASON
