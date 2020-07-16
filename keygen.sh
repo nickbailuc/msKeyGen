@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.52
+VERSION=0.53
 
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
@@ -231,22 +231,76 @@ validate_oem()
 }
 
 
+check_oem()
+{
+	echo TODO
+}
+
+
 validate_cd()
 {
 	# Initialization:
-	if [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
-	then
-		S1=${ARG2:0:3}
-		S2=${ARG2:4:7}
-	else
-		S1=${KEY:0:3}
-		S2=${KEY:4:7}
-	fi
+	S1=${ARG2:0:3}
+	S2=${ARG2:4:7}
 	g=$(( S2 % 10 ))
 
 	# Format validation:
-	if [[ $(expr length $ARG2) != 11 || ! $S2 =~ ^-?[0-9]+$ ||
-		! $S1 =~ ^-?[0-9]+$ || ${ARG2:3:1} != "-" ]]
+	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ||
+		$S1 =~ ^[0-9]+$ || $S2 =~ ^[0-9]+$ ]]
+
+#		$S1 =~ ^-?[0-9]+$ || $S2 =~ ^-?[0-9]+$ ]]
+#	if [[ $S1 =~ ^-?[0-9]+$ || $S2 =~ ^[0-9]+$ ]]
+
+
+	then
+		printf "Incorrect format!\n" >&2
+		exit 4
+	fi
+
+	# Mathematical validation:
+	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
+	then exitcode=1
+	fi
+	if (( S2 % 7 != 0 && g != 0 && g != 8 && g != 9 ))
+	then exitcode=$(( exitcode + 2 ))
+	fi
+
+	# Output:
+	if (( exitcode == 0 ))
+	then toString
+	else
+		#Error handling:
+		printf "This CD Key is invalid!" >&2
+		if (( exitcode == 1 ))
+		then
+			printf " The $S1 part is not acceptable as the 3-digit segment!\n" >&2
+			exit 5
+		elif (( exitcode == 2 ))
+		then
+			printf " The $S2 part must be divisible by 7 and not end in 0, 8, or 9\n" >&2
+			exit 5
+		elif (( exitcode == 3 ))
+		then
+			printf " Both segments ($S1 and $S2) are incorrect!\n" >&2
+			exit 5
+		else
+			printf "\n${CB}Validator: internal error! $REPORT${CN}" >&2
+			exit 6
+		fi
+	fi
+}
+
+
+check_cd()
+{
+	# Initialization:
+	S1=${KEY:0:3}
+	S2=${KEY:4:7}
+	g=$(( S2 % 10 ))
+
+	# Format validation:
+	if [[ $(expr length $KEY) != 11 || ! $S2 =~ ^-?[0-9]+$ ||
+		! $S1 =~ ^-?[0-9]+$ || ${KEY3:1} != "-" ]]
 	then
 		printf "Incorrect format!\n" >&2
 		exit 4
@@ -263,18 +317,7 @@ validate_cd()
 		printf "This CD key is invalid! $S2 must be divisible by 7 and not end in 0, 8, or 9\n" >&2
 		exitcode=$(( exitcode + 1 ))
 	fi
-
-	# Output:
-	if (( ! exitcode ))
-	then toString
-	else
-		if [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
-		then
-			printf $KEY
-			
-		fi
-	fi
-}
+} # 	exit 7 : Internal check failed!
 
 
 toString()
@@ -337,9 +380,7 @@ main()
 		elif [[ $ARG2 == "" ]]
 		then
 			i=1
-			if [[ $ARG3 != "-s" && $ARG3 != "--silent" ]]
-			then toString
-			fi
+			toString
 			$ARG1
 			printf "$KEY\n"
 			exit 0
@@ -354,7 +395,6 @@ main()
 				i=1
 				while (( i <= ARG2 ))
 				do
-					toString
 					$ARG1
 					printf "$KEY\n"
 					i=$(( i + 1 ))
@@ -369,7 +409,7 @@ main()
 						toString
 						$ARG1
 						printf "$KEY\n"
-						validate_oem
+						check_oem
 						i=$(( i + 1 ))
 					done
 				else
@@ -379,7 +419,7 @@ main()
 						toString
 						$ARG1
 						printf "$KEY\n"
-						validate_cd
+						check_cd
 						i=$(( i + 1 ))
 					done
 				fi
@@ -479,13 +519,17 @@ ${CN}		Uses internal validation algorithm to confirm the newly generated
 
 ${CB}[EXIT CODES]
 ${CN}	0 : Success
+	Argument Errors:
 	1 : Argument 1 invalid: product type / help / version
 	2 : Argument 2 invalid: N number of keys / debug
 	3 : Too many arguments given
 	4 : Validator: invalid format
 	5 : Validator: invalid Key
-	6 : Internal check failed!
-	7 : End of script!
+
+	Internal Errors (please report these):
+	6 : Validator: internal error!
+	7 : Internal check algorithm failed!
+	8 : End of script!
 		The script is set to exit 0 after completion of generation. If the script
 		reaches the end (outside of main() function) the script will exit 2
 		indicating an error has occured!
@@ -540,6 +584,10 @@ Try $0 --help for more information.\n"
 }
 
 
+REPORT="Please report this to <nick.bailuc@gmail.com> along with
+the version ($VERSION) and arguments ($1 $2 $3) used.\n"
+
+
 # Initialization:
 ARG1=$1
 ARG2=$2
@@ -548,6 +596,7 @@ ARG4=$4
 CN=$(tput sgr0)
 CB=$(tput bold)
 main
-printf "\nCongratulations, you have found an end-of-script error! Please report this to
-<nick.bailuc@gmail.com> along with the version number, and the exact arguments you used.\n" >&2
-exit 7
+
+# End of script error:
+printf "\nCongratulations, you have found an end-of-script error! $REPORT" >&2
+exit 8
