@@ -1,9 +1,15 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.46
+VERSION=0.50
 license()
 {
 printf "\
+${CB}$0 (Version 0.50)${CN}
+Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
+
+This program uses the \$RANDOM variable built into Bash in a sequence until it finds
+appropriate license keys for various deprecated Microsoft products from the 1990s.
+
 	\"GNU General Public License version 3 or later\"\n
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -58,7 +64,7 @@ oem()
 	r5=$(( RANDOM % 10 ))
 
 	# Export Product Key:
-	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\n"
+	KEY="$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\n"
 }
 
 
@@ -145,19 +151,20 @@ cd()
 	fi
 
 	# 7-digit "divisible by 7" segment:
-	a=0; b=0; c=0; d=0; e=0; f=1
-	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
+	a=0; b=0; c=0; d=0; e=0; f=0; g=1
+	while (( (1000000*a + 100000*b + 10000*c + 1000*d + 100*e + 10*f + g) % 7 != 0 ))
 	do
 		a=$(( RANDOM % 10 ))
 		b=$(( RANDOM % 10 ))
 		c=$(( RANDOM % 10 ))
 		d=$(( RANDOM % 10 ))
 		e=$(( RANDOM % 10 ))
-		f=$(( RANDOM % 7 + 1 ))
+		f=$(( RANDOM % 10 ))
+		g=$(( RANDOM % 7 + 1 ))
 	done
 
 	# Export CD Key:
-	printf "$S-$a$b$c$d$e$f\n"
+	KEY="$S-$a$b$c$d$e$f$g\n"
 }
 
 
@@ -191,19 +198,20 @@ cd_debug()
 
 	# 7-digit "divisible by 7" segment:
 	printf "Initiating divisible by 7 segment:${CN}\n"
-	a=0; b=0; c=0; d=0; e=0; f=1
-	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
+	a=0; b=0; c=0; d=0; e=0; f=0; g=1
+	while (( (1000000*a + 100000*b + 10000*c + 1000*d + 100*e + 10*f + g) % 7 != 0 ))
 	do
 		a=$(( RANDOM % 10 ))
 		b=$(( RANDOM % 10 ))
 		c=$(( RANDOM % 10 ))
 		d=$(( RANDOM % 10 ))
 		e=$(( RANDOM % 10 ))
-		f=$(( RANDOM % 7 + 1 ))
+		f=$(( RANDOM % 10 ))
+		g=$(( RANDOM % 7 + 1 ))
 		printf "\ta = $a\n\tb = $b\n\tc = $c\n\td = $d\n\te = $e\n\tf = $f\n"
 		printf "\tLinear combination equals "
 		printf "$(( 100000*$a + 10000*$b + 1000*$c + 100*$d + 10*$e + $f ))"
-		if (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
+		if (( (1000000*a + 100000*b + 10000*c + 1000*d + 100*e + 10*f + g) % 7 != 0 ))
 		then printf " which is not divisible by 7!\n\n"
 		fi
 	done
@@ -213,7 +221,7 @@ cd_debug()
 	# Export CD Key:
 	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
 	printf "\033[4mWindows 95 / NT 4.0 / Office 95 CD Key #$i:\t"
-	printf "$S-$a$b$c$d$e$f\033[0m\n\n"
+	printf "$S-$a$b$c$d$e$f$g\033[0m\n\n"
 }
 
 
@@ -225,7 +233,36 @@ validate_oem()
 
 validate_cd()
 {
-	echo TODO
+	# Initialization:
+	S1=${ARG2:0:3}
+	S2=${ARG2:4:7}
+	g=$(( S2 % 10 ))
+
+	# Format validation:
+	if [[ $(expr length $ARG2) != 11 || ! $S2 =~ ^-?[0-9]+$ ||
+		! $S1 =~ ^-?[0-9]+$ || ${ARG2:3:1} != "-" ]]
+	then
+		printf "Incorrect format!\n" >&2
+		exit 4
+	fi
+
+	# Mathematical validation:
+	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
+	then
+		printf "This CD Key is invalid! $S1 is not acceptable as the 3-digit segment!\n" >&2
+		exitcode=$(( exitcode + 1 ))
+	fi
+	if (( S2 % 7 != 0 && g != 0 && g != 8 && g != 9 ))
+	then
+		printf "This CD key is invalid! $S2 must be divisible by 7 and not end in 0, 8, or 9\n" >&2
+		exitcode=$(( exitcode + 1 ))
+	fi
+
+	# Output:
+	if (( ! exitcode ))
+	then toString
+	else exit 5
+	fi
 }
 
 
@@ -235,6 +272,8 @@ toString()
 	then printf "Windows 95 / NT 4.0 OEM Product ID #$i:\t\t"
 	elif [[ $ARG1 == "cd" ]]
 	then printf "Windows 95 / NT 4.0 / Office 95 CD Key #$i:\t\t"
+	elif [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
+	then printf "This key is genuine!\n"
 	fi
 }
 
@@ -263,13 +302,17 @@ main()
 	elif [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
 	then
 		if [[ $ARG2 == *"OEM"* ]]
-		then echo validate_oem
-		else echo validate_cd
+		then
+			validate_oem
+			exit 0
+		else
+			validate_cd
+			exit 0
 		fi
 
-	# License Key Generation:
+	# License key Generation:
 	else
-		# Generate 1 key:
+		# Debug mode:
 		if [[ $ARG2 == "-d" || $ARG2 == "--debug" ]]
 		then
 			if [[ $ARG1 == "oem" ]]
@@ -279,7 +322,7 @@ main()
 			else exit 2
 			fi
 			exit 0
-		# ARG2 Handling:
+		# Single key mode:
 		elif [[ $ARG2 == "" ]]
 		then
 			i=1
@@ -287,6 +330,7 @@ main()
 			then toString
 			fi
 			$ARG1
+			printf $KEY
 			exit 0
 		elif (( ARG2 < 1 ))
 		then
@@ -301,6 +345,7 @@ main()
 				then toString
 				fi
 				$ARG1
+				printf $KEY
 				i=$(( i + 1 ))
 			done
 			exit 0
@@ -312,7 +357,7 @@ main()
 help()
 {
 printf "\
-${CB}$0 (Version 0.46)${CN}
+${CB}$0 (Version 0.50)${CN}
 Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
 This is free software; see the source code for copying conditions.
 There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
@@ -391,7 +436,10 @@ ${CN}	0 : Success
 	1 : Argument 1 invalid: product type / help / version
 	2 : Argument 2 invalid: N number of keys / debug
 	3 : Too many arguments given
-	4 : End of script!
+	4 : Validator: invalid format
+	5 : Validator: invalid Key
+	6 : Internal check failed!
+	7 : End of script!
 		The script is set to exit 0 after completion of generation. If the script
 		reaches the end (outside of main() function) the script will exit 2
 		indicating an error has occured!
@@ -416,8 +464,5 @@ CN=$(tput sgr0)
 CB=$(tput bold)
 main
 printf "\nCongratulations, you have found an end-of-script error! Please report this to
-<nick.bailuc@gmail.com> along with the version number, and the exact argument you used.\n" >&2
-exit 3
-
-#TODO: ARG1 = --validate
-#TODO: ARG3 = --check
+<nick.bailuc@gmail.com> along with the version number, and the exact arguments you used.\n" >&2
+exit 7
