@@ -1,10 +1,12 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.62
-#TODO ADD 1-SENTANCE DESCRIPTION ABOVE EACH FUNCTION
+VERSION=0.70
+EMAIL="<nick.bailuc@gmail.com>"
+
+# DISPLAYS GPL3+ LICENSE:
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
-Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
+Copyright (C) 2020 Nick Bailuc, $EMAIL
 
 This program uses the \$RANDOM variable built into Bash in a sequence until it finds
 appropriate license keys for various deprecated Microsoft products from the 1990s.
@@ -27,6 +29,7 @@ See $0 --help for more information.
 }
 
 
+# GENERATE OEM KEY:
 oem()
 {
 	# 3-digit day of year:
@@ -68,6 +71,7 @@ oem()
 }
 
 
+# GENERATE OEM KEY WITH (VERBOSE) DEBUGGING, PRINTING EVERY VARIABLE AT EACH STEP:
 oem_debug()
 {
 	printf "${CB}Initialization complete!\n\n"
@@ -137,6 +141,7 @@ oem_debug()
 
 
 
+# GENERATE CD KEY:
 cd()
 {
 	# 3-digit segment:
@@ -168,6 +173,7 @@ cd()
 }
 
 
+# GENERATE CD KEY WITH (VERBOSE) DEBUGGING, PRINTING EVERY VARIABLE AT EACH STEP:
 cd_debug()
 {
 	printf "${CB}Initialization complete!\n\n"
@@ -225,40 +231,40 @@ cd_debug()
 }
 
 
+# VALIDATE OEM KEY FROM STDIN:
 validate_oem()
 { #TODO: str->int conversion BROKEN on OEM, but works perfectly on CD (somefuckinghow)
-	# Initialization:
-	S1=${ARG2:0:3}
-	S2=${ARG2:3:2}
-	S3=${ARG2:11:6}
-	S4=${ARG2:18:5}
-
-#	S1=1${ARG2:0:3}
-#	S2=1${ARG2:3:2}
-#	S3=1${ARG2:11:6}
-#	S4=1${ARG2:18:5}
-#	S1=$(( S1 % 1000 ))
-#	S2=$(( S2 % 100 ))
-#	S3=$(( S2 % 1000000 ))
-#	S4=$(( S3 % 100000 ))
-	g=$(( S3 % 10 ))
 
 	# Format validation:
 	if [[ $(expr length $ARG2) != 23 || ${ARG2:5:6} != "-OEM-0" || ${ARG2:17:1} != "-" ]] ||
-		[ "$S1" -ne "$S1" ] || [ "$S2" -ne "$S2" ] ||
-		[ "$S3" -ne "$S3" ] || [ "$S4" -ne "$S4" ] 2> /dev/null
+		[ "${ARG2:0:3}" -ne "${ARG2:0:3}" ] || [ "${ARG2:3:2}" -ne "${ARG2:3:2}" ] ||
+		[ "${ARG2:11:6}" -ne "${ARG2:11:6}" ] || [ "${ARG2:18:5}" -ne "${ARG2:18:5}" ] 2> /dev/null
 	then
-		printf "Incorrect format! OEM keys resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
+		printf "Incorrect format!\n\tOEM keys must resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
+		printf "\tCD Key's must resemble YYY-XXXXXXX\n" >&2
 		exit 4
 	fi
+
+	# Initialization:
+	KEY_TYPE="OEM"
+	S1=1${ARG2:0:3}
+	S2=1${ARG2:3:2}
+	S3=1${ARG2:11:6}
+	S4=1${ARG2:18:5}
+	S1=$(( S1 % 1000 ))
+	S2=$(( S2 % 100 ))
+	S3=$(( S2 % 1000000 ))
+	S4=$(( S3 % 100000 ))
+	g=$(( S3 % 10 )) ; echo $g
+	exitcode=0
 
 	# Mathematical validation:
 	if (( S1 < 1 || S1 > 366))
 	then exitcode=100
 	fi
-	if (( S2 != 0 )) && (( S2 < 95 || S2 > 03 ))
-	then exitcode=$(( exitcode + 10 ))
-	fi
+#	if (( S2 != 0 )) && (( S2 < 95 || S2 > 03 ))
+#	then exitcode=$(( exitcode + 10 ))
+#	fi
 	if (( S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then exitcode=$(( exitcode + 1 ))
 	fi
@@ -283,35 +289,31 @@ validate_oem()
 }
 
 
+# CHECK INTERNALLY GENERATED OEM KEY:
 check_oem()
-{
-	# Initialization:
-	S1=${KEY:0:3}
-	S2=${KEY:3:2}
-	S3=${KEY:11:6}
-	S4=${KEY:18:5}
-
-#	S1=1${KEY:0:3}
-#	S2=1${KEY:3:2}
-#	S3=1${KEY:11:6}
-#	S4=1${KEY:18:5}
-#	S1=$(( S1 % 1000 ))
-#	S2=$(( S2 % 100 ))
-#	S3=$(( S2 % 1000000 ))
-#	S4=$(( S3 % 100000 ))
-	g=$(( S3 % 10 ))
+{ # TODO
 
 	# Format validation:
 	if [[ $(expr length $KEY) != 23 || ${KEY:5:6} != "-OEM-0" || ${KEY:17:1} != "-" ]] ||
-		[ "$S1" -ne "$S1" ] || [ "$S2" -ne "$S2" ] ||
-		[ "$S3" -ne "$S3" ] || [ "$S4" -ne "$S4" ] 2> /dev/null
+		[ "${KEY:0:3}" -ne "${KEY:0:3}" ] || [ "${KEY:3:2}" -ne "${KEY:3:2}" ] ||
+		[ "${KEY:11:6}" -ne "${KEY:11:6}" ] || [ "${KEY:18:5}" -ne "${KEY:18:5}" ] 2> /dev/null
 	then
-		printf "Incorrect format! OEM keys resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
 	fi
 
+	S1=1${KEY:0:3}
+	S2=1${KEY:3:2}
+	S3=1${KEY:11:6}
+	S4=1${KEY:18:5}
+	S1=$(( S1 % 1000 ))
+	S2=$(( S2 % 100 ))
+	S3=$(( S2 % 1000000 ))
+	S4=$(( S3 % 100000 ))
+	g=$(( S3 % 10 ))
+
 	# Mathematical validation:
-	if (( S1 < 1 || S1 > 366))
+	if (( S1 < 1 || S1 > 366 || S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
 		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
@@ -319,31 +321,32 @@ check_oem()
 	then
 		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
-	elif (( S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
-	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
-		exit 7
+	else printf "\t✓\n"
 	fi
-	printf "\t✓\n"
 }
 
 
+# VALIDATE CD KEY FROM STDIN:
 validate_cd()
 {
+
+	# Format validation:
+	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ]] ||
+		[ "${ARG2:0:3}" -ne "${ARG2:0:3}" ] || [ "${ARG2:4:7}" -ne "${ARG2:4:7}" ] 2> /dev/null
+	then
+		printf "Incorrect format!\n\tOEM keys must resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
+		printf "\tCD Key's must resemble YYY-XXXXXXX\n" >&2
+		exit 4
+	fi
+
 	# Initialization:
+	KEY_TYPE="CD"
 	S1=1${ARG2:0:3}
 	S2=1${ARG2:4:7}
 	S1=$(( S1 % 1000 ))
 	S2=$(( S2 % 10000000 ))
 	g=$(( S2 % 10 ))
-
-	# Format validation:
-	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ]] ||
-		[ "$S1" -ne "$S1" ] || [ "$S2" -ne "$S2" ] 2> /dev/null
-	then
-		printf "Incorrect format! CD Key's must resemble YYY-XXXXXXX\n" >&2
-		exit 4
-	fi
+	exitcode=0
 
 	# Mathematical validation:
 	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
@@ -379,8 +382,17 @@ validate_cd()
 }
 
 
+# CHECK INTERNALLY GENERATED CD KEY:
 check_cd()
 {
+	# Format validation:
+	if [[ $(expr length $KEY) != 11 || ${KEY:3:1} != "-" ]] ||
+		[ "${KEY:0:3}" -ne "${KEY:0:3}" ] || [ "${KEY:4:7}" -ne "${KEY:4:7}" ] 2> /dev/null
+	then
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		exit 7
+	fi
+
 	# Initialization:
 	S1=1${KEY:0:3}
 	S2=1${KEY:4:7}
@@ -388,28 +400,18 @@ check_cd()
 	S2=$(( S2 % 10000000 ))
 	g=$(( S2 % 10 ))
 
-	# Format validation:
-	if [[ $(expr length $KEY) != 11 || ${KEY:3:1} != "-" ]] ||
-		[ "$S1" -ne "$S1" ] || [ "$S2" -ne "$S2" ] 2> /dev/null
-	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
-		exit 7
-	fi
-
 	# Mathematical validation:
-	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
+	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ||
+		S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
 		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
-	elif (( S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
-	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
-		exit 7
+	else printf "\t✓\n"
 	fi
-	printf "\t✓\n"
 }
 
 
+# GENERATE APPROPRIATE STDOUT STRING ON SUCCESS:
 toString()
 {
 	if [[ $ARG1 == "oem" ]]
@@ -417,11 +419,17 @@ toString()
 	elif [[ $ARG1 == "cd" ]]
 	then printf "Windows 95 / NT 4.0 / Office 95 CD Key #$i:\t\t"
 	elif [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
-	then printf "This key is genuine!\n"
+	then
+		if [[ $KEY_TYPE == "OEM" ]]
+		then printf "This OEM key is genuine!\n"
+		else printf "This CD key is genuine!\n"
+		fi
 	fi
 }
 
 
+# MAIN FUNCTION RESPONCIBLE FOR HANDLING ARGUMENTS, REPEATED GENERATIONS,
+# AND PIPING DATA BETWEEN FUNCTIONS:
 main()
 {
 	# Too many arguments validation:
@@ -532,14 +540,13 @@ main()
 # TEXT AND SCRIPT INITIALIZATION #
 
 
+# DISPLAY FULL HELP:
 help()
 {
 printf "\
 ${CB}$0 (Version $VERSION)${CN}
-Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
-This is free software; see the source code for copying conditions.
-There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.
+
+Copyright (C) 2020 Nick Bailuc, $EMAIL
 
 This program uses the \$RANDOM variable built into Bash in a sequence until it finds
 appropriate license keys for various deprecated Microsoft products from the 1990s.
@@ -625,7 +632,7 @@ ${CN}	0 : Success
 	7 : Internal check algorithm failed!
 	8 : End of script!
 		The script is set to exit 0 after completion of generation. If the script
-		reaches the end (outside of main() function) the script will exit 2
+		reaches the end (outside of main() function) the script will exit 8
 		indicating an error has occured!
 
 
@@ -639,10 +646,16 @@ ${CN}"
 }
 
 
+# DISPLAY SYNOPSIS UPON GIVING NO ARGUMENTS:
 usage()
 {
 printf "\
 ${CB}$0 (Version $VERSION)
+
+Copyright (C) 2020 Nick Bailuc, $EMAIL
+This is free software; see the source code for copying conditions.
+There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
 
 SYNOPSIS:	$0 ARG1 ARG2 ARG3
 Minimal Usage:${CB}	$0 ARG1
@@ -678,7 +691,7 @@ Try $0 --help for more information.\n"
 }
 
 
-REPORT="\nPlease report this to <nick.bailuc@gmail.com> along with
+REPORT="\nPlease report this to $EMAIL along with
 the version ($VERSION) and arguments ($1 $2 $3) used.\n"
 
 
