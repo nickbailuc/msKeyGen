@@ -1,16 +1,18 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.70
-EMAIL="<nick.bailuc@gmail.com>"
+VERSION=0.80
+EMAIL="<nbail040@uottawa.ca>"
 
 # DISPLAYS GPL3+ LICENSE:
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
 Copyright (C) 2020 Nick Bailuc, $EMAIL
 
-This program uses the \$RANDOM variable built into Bash in a sequence until it finds
-appropriate license keys for various deprecated Microsoft products from the 1990s.
-The same algorithms may also be used to check the validity of a licence key.
+This program uses the \$RANDOM variable built into Bash in a sequence until it
+generates appropriate software license keys based on a proprietary alogrithm.
+It may be used in part or entirely by an organization as a method of DRM to
+verify a legal purchase of their software. The same algorithms may also be used
+to check the validity of a licence key.
 See $0 --help for more information.
 
 	\"GNU General Public License version 3 or later\"\n
@@ -33,8 +35,8 @@ See $0 --help for more information.
 oem()
 {
 	# 3-digit day of year:
-	D=$(( RANDOM % 366 + 1))
-	if (( D < 10))
+	D=$(( RANDOM % 366 + 1 ))
+	if (( D < 10 ))
 	then D=00$D
 	elif (( D < 100 ))
 	then D=0$D
@@ -77,9 +79,9 @@ oem_debug()
 	printf "${CB}Initialization complete!\n\n"
 	# 3-digit day of year:
 	printf "Determining 3-digit day of year:${CN}\n"
-	D=$(( RANDOM % 366 + 1))
+	D=$(( RANDOM % 366 + 1 ))
 	printf "\tWorking with fragmentary 3-digit day of year $D\n\n${CN}"
-	if (( D < 10))
+	if (( D < 10 ))
 	then
 		printf "\tDay of year confirmed to be single-digit. Adding two zero's\n"
 		D=00$D
@@ -135,7 +137,7 @@ oem_debug()
 
 	# Export Product Key:
 	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
-	printf "\033[4mWindows 95 / NT 4.0 Product ID:\t"
+	printf "\033[4mOEM Product ID:\t"
 	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\033[0m\n\n"
 }
 
@@ -226,7 +228,7 @@ cd_debug()
 
 	# Export CD Key:
 	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
-	printf "\033[4mWindows 95 / NT 4.0 / Office 95 CD Key:\t"
+	printf "\033[4mCD Key:\t"
 	printf "$S-$a$b$c$d$e$f$g\033[0m\n\n"
 }
 
@@ -302,6 +304,7 @@ check_oem()
 		exit 7
 	fi
 
+	# Initialization:
 	S1=1${KEY:0:3}
 	S2=1${KEY:3:2}
 	S3=1${KEY:11:6}
@@ -415,9 +418,9 @@ check_cd()
 toString()
 {
 	if [[ $ARG1 == "oem" ]]
-	then printf "Windows 95 / NT 4.0 OEM Product ID #$i:\t\t"
+	then printf "OEM Product ID #$i:\t\t"
 	elif [[ $ARG1 == "cd" ]]
-	then printf "Windows 95 / NT 4.0 / Office 95 CD Key #$i:\t\t"
+	then printf "CD Key #$i:\t\t"
 	elif [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
 	then
 		if [[ $KEY_TYPE == "OEM" ]]
@@ -537,6 +540,7 @@ main()
 }
 
 
+
 # TEXT AND SCRIPT INITIALIZATION #
 
 
@@ -548,9 +552,12 @@ ${CB}$0 (Version $VERSION)${CN}
 
 Copyright (C) 2020 Nick Bailuc, $EMAIL
 
-This program uses the \$RANDOM variable built into Bash in a sequence until it finds
-appropriate license keys for various deprecated Microsoft products from the 1990s.
-The same algorithms may also be used to check the validity of a licence key.
+This program uses the \$RANDOM variable built into Bash in a sequence until it
+generates appropriate software license keys based on a proprietary alogrithm.
+It may be used in part or entirely by an organization as a method of DRM to
+verify a legal purchase of their software. The same algorithms may also be used
+to check the validity of a licence key.
+See $0 --help for more information.
 
 
 ${CB}[SYNOPSIS]
@@ -576,10 +583,10 @@ ${CN}		Generate 5 keys silently (only output the key).
 
 ${CB}[ARG 1 PARAMETERS: TYPES OF KEYS]
 	oem
-${CN}		Generate Microsoft Windows 95 / NT 4.0 Product ID (OEM) Keys.
+${CN}		Generate Product ID (OEM) Keys.
 
 ${CB}	cd
-${CN}		Generate Microsoft Windows 95 / NT 4.0 / Office 95 CD Keys.
+${CN}		Generate CD Keys.
 
 ${CB}	-v, --validate
 ${CN}		Validate a CD/OEM key provided as an argument.
@@ -635,14 +642,7 @@ ${CN}	0 : Success
 		reaches the end (outside of main() function) the script will exit 8
 		indicating an error has occured!
 
-
-Inspiration:
-https://medium.com/@dgurney/so-you-want-to-generate-license-keys-for-old-microsoft-products-a355c8bf5408
-https://www.youtube.com/watch?v=3DCEeASKNDk
-
-${CB}Disclaimer: This script was written for educational purposes only, and the author does not
-encourage or endorse software piracy of any sort.
-${CN}"
+"
 }
 
 
@@ -662,8 +662,8 @@ Minimal Usage:${CB}	$0 ARG1
 
 ${CB}[ARG 1 PARAMETERS: TYPES OF KEYS]
 
-	oem${CN}	Generate Microsoft Windows 95 / NT 4.0 Product ID (OEM) Keys.${CB}
-	cd${CN}	Generate Microsoft Windows 95 / NT 4.0 / Office 95 CD Keys.${CB}
+	oem${CN}	Generate Product ID (OEM) Keys.${CB}
+	cd${CN}	Generate CD Keys.${CB}
 	-v, --validate	${CN}Validate a CD/OEM key provided as an argument.
 ${CB}	-h, --help	${CN}Show this help and exit 0.
 ${CB}	-l, --license	${CN}Display license
@@ -672,7 +672,7 @@ ${CB}[ARG 2 PARAMETER: NUMBER OF KEYS] (optional)
 ${CN}	This parameter may be omitted entirely, in which case only 1 key will be generated!
 
 ${CB}	N${CN} ∈ (1, 2**63-1)
-		Enter any integer between 1 and 9223372036854775807 representing
+		Enter any integer between 1 and 9223372036854775807 (2**63 -1) representing
 		how many keys to be generated. A Bash integer calculation may also be entered!
 
 ${CB}	KEY${CN}	If -v is used, you must enter an OEM or CD key to validate.
