@@ -3,7 +3,7 @@
 ##  Author = "Nick Bailuc"
 ##  Copyright = "Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>"
 ##  License = "GNU General Public License, version 3 or later"
-##	"Windows 95 Product Key Generator" (Version 0.20)
+##	"Windows 95 Product Key Generator" (Version 0.21)
 ##
 ##  There are 41713826857560 valid Product Key's for Windows 95. This program
 ##  uses Bash's $RANDOM variable in a sequence until it finds appropriate keys.
@@ -22,7 +22,7 @@
 ##  You should have received a copy of the GNU General Public License
 ##  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
-VERSION=0.20
+VERSION=0.21
 
 init()
 {
@@ -84,7 +84,7 @@ generate()
 	r5=$(( $RANDOM % 10 ))
 
 	# Export Product Key:
-	printf "Windows 95 Product Key #$i:\t$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\n"
+	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\n"
 }
 
 generate_debug()
@@ -156,51 +156,79 @@ generate_debug()
 }
 
 # main:
-if [[ $1 -eq "" ]]
+if [[ $2 == "-d" ]]
 then
-	i=1
-	generate
-	exit 0
-elif (( $1 < 1 ))
-then
-	printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n"
-	exit 1
-elif (( $1 == 37 * 4 + 2**9 ))
-then
-	for c in "0 76 61 6c 69 6b 20 73 75 63 6b 73 20 64 69 63 6b"
-	do
-		echo $c | xxd -r
-	done
-	echo
-	exit 2
-elif (( $1 == 2 * 193 ))
-then
-	for c in "0 49 6e 74 65 6c 20 3e 20 41 4d 44"
-	do
-		echo $c | xxd -r
-	done
-	printf " !\n"
-	exit 2
-elif (( $1 == 2**6 ))
-then
-	for c in "0 6e 61 68 2c 49 6e 74 65 6c 46 6f 72 4c 69 66 65"
-	do
-		echo $c | xxd -r
-	done
-	echo
-	exit 2
-else
-	i=1
-	while (( i <= $1 ))
-	do
-		generate
-		i=$(( i + 1 ))
-	done
-	exit 0
-fi
+	if [[ $1 == "" ]]
+	then
+		i=1
+		printf "Windows 95 Product Key #$i:\t"
+		generate_debug
+		exit 0
+	elif (( $1 < 1 ))
+	then
+		printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n"
+		exit 1
+	else
+		i=1
+		while (( i <= $1 ))
+		do
+			printf "Windows 95 Product Key #$i:\t"
+			generate_debug
+			i=$(( i + 1 ))
+		done
+		exit 0
+	fi
 
-printf "End of script!\n"
-exit 3
+	printf "End of script!\n"
+	exit 3
+elif [[ $2 == "-s" ]]
+then
+	if [[ $1 == "" ]]
+	then
+		i=1
+		generate
+		exit 0
+	elif (( $1 < 1 ))
+	then
+		printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n"
+		exit 1
+	else
+		i=1
+		while (( i <= $1 ))
+		do
+			generate
+			i=$(( i + 1 ))
+		done
+		exit 0
+	fi
+
+	printf "End of script!\n"
+	exit 3
+else
+	if [[ $1 -eq "" ]]
+	then
+		i=1
+		printf "Windows 95 Product Key #$i:\t"
+		generate
+		exit 0
+	elif (( $1 < 1 ))
+	then
+		printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n"
+		exit 1
+	else
+		i=1
+		while (( i <= $1 ))
+		do
+			printf "Windows 95 Product Key #$i:\t"
+			generate
+			i=$(( i + 1 ))
+		done
+		exit 0
+	fi
+
+	printf "End of script!\n"
+	exit 3
+fi
 
 # Exit Codes:
 #	0 : Success
@@ -208,5 +236,5 @@ exit 3
 #	2 : Easter egg
 #	3 : End of script!
 
-#TODO arguments: -d for debug, -v for verbose, -m only output keys, -n amount_of_keys_to_generate, -s save to file
+#TODO arguments: -d for debug, -v for verbose, -s only output keys, -n amount_of_keys_to_generate, -s save to file
 #TODO: add validator
