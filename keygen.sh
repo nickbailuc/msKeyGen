@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.53
+VERSION=0.54
 
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
@@ -245,15 +245,11 @@ validate_cd()
 	g=$(( S2 % 10 ))
 
 	# Format validation:
-	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ||
-		$S1 =~ ^[0-9]+$ || $S2 =~ ^[0-9]+$ ]]
-
-#		$S1 =~ ^-?[0-9]+$ || $S2 =~ ^-?[0-9]+$ ]]
-#	if [[ $S1 =~ ^-?[0-9]+$ || $S2 =~ ^[0-9]+$ ]]
-
-
+	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ]] #TODO: CHECK IF S1&S2 are ALL INTS
+		"$S1" -eq "$S1" || "$S2" -eq "$S2" ]]
 	then
 		printf "Incorrect format!\n" >&2
+		echo S1 $S1 S2 $S2
 		exit 4
 	fi
 
@@ -261,7 +257,7 @@ validate_cd()
 	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
 	then exitcode=1
 	fi
-	if (( S2 % 7 != 0 && g != 0 && g != 8 && g != 9 ))
+	if (( S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then exitcode=$(( exitcode + 2 ))
 	fi
 
@@ -293,30 +289,7 @@ validate_cd()
 
 check_cd()
 {
-	# Initialization:
-	S1=${KEY:0:3}
-	S2=${KEY:4:7}
-	g=$(( S2 % 10 ))
-
-	# Format validation:
-	if [[ $(expr length $KEY) != 11 || ! $S2 =~ ^-?[0-9]+$ ||
-		! $S1 =~ ^-?[0-9]+$ || ${KEY3:1} != "-" ]]
-	then
-		printf "Incorrect format!\n" >&2
-		exit 4
-	fi
-
-	# Mathematical validation:
-	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
-	then
-		printf "This CD Key is invalid! $S1 is not acceptable as the 3-digit segment!\n" >&2
-		exitcode=$(( exitcode + 1 ))
-	fi
-	if (( S2 % 7 != 0 && g != 0 && g != 8 && g != 9 ))
-	then
-		printf "This CD key is invalid! $S2 must be divisible by 7 and not end in 0, 8, or 9\n" >&2
-		exitcode=$(( exitcode + 1 ))
-	fi
+	echo TODO
 } # 	exit 7 : Internal check failed!
 
 
