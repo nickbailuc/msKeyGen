@@ -1,9 +1,10 @@
 #!/bin/bash
-#SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.45
+# SPDX-License-Identifier: GPL-3.0-or-later
+VERSION=0.46
 license()
 {
 printf "\
+	\"GNU General Public License version 3 or later\"\n
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
@@ -63,11 +64,11 @@ oem()
 
 oem_debug()
 {
-	printf "${c2}Initialization complete!\n\n"
+	printf "${CB}Initialization complete!\n\n"
 	# 3-digit day of year:
-	printf "Determining 3-digit day of year:${c1}\n"
+	printf "Determining 3-digit day of year:${CN}\n"
 	D=$(( RANDOM % 366 + 1))
-	printf "\tWorking with fragmentary 3-digit day of year $D\n\n${c1}"
+	printf "\tWorking with fragmentary 3-digit day of year $D\n\n${CN}"
 	if (( D < 10))
 	then
 		printf "\tDay of year confirmed to be single-digit. Adding two zero's\n"
@@ -77,11 +78,11 @@ oem_debug()
 		printf "\tDay of year confirmed to be double-digit. Adding one zero\n"
 		D=0$D
 	fi
-	printf "${c2}\t3-digit day of year determined to be $D!\n\n"
+	printf "${CB}\t3-digit day of year determined to be $D!\n\n"
 
 	# 2-digit year:
 	Y=$RANDOM
-	printf "Determining 2-digit year:${c1}\n"
+	printf "Determining 2-digit year:${CN}\n"
 	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
 	do
 		Y=$(( RANDOM % 100 ))
@@ -90,10 +91,10 @@ oem_debug()
 	if (( Y < 4 ))
 	then Y=0$Y
 	fi
-	printf "${c2}\t2-digit year determined to be $Y!\n\n"
+	printf "${CB}\t2-digit year determined to be $Y!\n\n"
 
 	# 7-digit "divisible by 7" segment:
-	printf "Initiating divisible by 7 segment:${c1}\n"
+	printf "Initiating divisible by 7 segment:${CN}\n"
 	a=0; b=0; c=0; d=0; e=0; f=1
 	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
 	do
@@ -110,20 +111,20 @@ oem_debug()
 		then printf " which is not divisible by 7!\n\n"
 		fi
 	done
-	printf "${c2}\n\t$((100000*a + 10000*b + 1000*c + 100*d + 10*e + f)) is divisible by 7!\n\n"
+	printf "${CB}\n\t$((100000*a + 10000*b + 1000*c + 100*d + 10*e + f)) is divisible by 7!\n\n"
 
 	# 5-digit "random" segment:
-	printf "Determining 5-digit segment:${c1}\n"
+	printf "Determining 5-digit segment:${CN}\n"
 	r1=$(( RANDOM % 10 ))
 	r2=$(( RANDOM % 10 ))
 	r3=$(( RANDOM % 10 ))
 	r4=$(( RANDOM % 10 ))
 	r5=$(( RANDOM % 10 ))
 	printf "\tr1 = $r1\n\tr2 = $r2\n\tr3 = $r3\n\tr4 = $r4\n\tr5 = $r5\n"
-	printf "${c2}\t5-digit segment determined to be $r1$r2$r3$r4$r5!\n\n"
+	printf "${CB}\t5-digit segment determined to be $r1$r2$r3$r4$r5!\n\n"
 
 	# Export Product Key:
-	printf "${c2}Parsing variables and exporting to stdout:${c1}\n\n"
+	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
 	printf "\033[4mWindows 95 / NT 4.0 Product ID #$i:\t"
 	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\033[0m\n\n"
 }
@@ -162,9 +163,9 @@ cd()
 
 cd_debug()
 {
-	printf "${c2}Initialization complete!\n\n"
+	printf "${CB}Initialization complete!\n\n"
 	# 3-digit day of year:
-	printf "Determining 3-digit segment:${c1}\n"
+	printf "Determining 3-digit segment:${CN}\n"
 	# 3-digit segment:
 	S=$(( RANDOM % 1000 ))
 	printf "\tTrying $S\n"
@@ -176,7 +177,7 @@ cd_debug()
 		then printf "Combinations of the set {333, 444, ..., 999} cannot be used!\n"
 		fi
 	done
-	printf "\t${c2}Fragmentary 3-digit segment is $S!\n${c1}"
+	printf "\t${CB}Fragmentary 3-digit segment is $S!\n${CN}"
 	if (( S < 10))
 	then
 		printf "\t3-digit segment confirmed to be single-digit. Adding two zero's\n"
@@ -186,10 +187,10 @@ cd_debug()
 		printf "\t3-digit segment confirmed to be double-digit. Adding one zero\n"
 		S=0$S
 	fi
-	printf "${c2}\t3-digit segment determined to be $S!\n\n"
+	printf "${CB}\t3-digit segment determined to be $S!\n\n"
 
 	# 7-digit "divisible by 7" segment:
-	printf "Initiating divisible by 7 segment:${c1}\n"
+	printf "Initiating divisible by 7 segment:${CN}\n"
 	a=0; b=0; c=0; d=0; e=0; f=1
 	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
 	do
@@ -206,13 +207,25 @@ cd_debug()
 		then printf " which is not divisible by 7!\n\n"
 		fi
 	done
-	printf "${c2}\n\t$((100000*a + 10000*b + 1000*c + 100*d + 10*e + f)) is divisible by 7!\n\n"
+	printf "${CB}\n\t$((100000*a + 10000*b + 1000*c + 100*d + 10*e + f)) is divisible by 7!\n\n"
 
 
 	# Export CD Key:
-	printf "${c2}Parsing variables and exporting to stdout:${c1}\n\n"
+	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
 	printf "\033[4mWindows 95 / NT 4.0 / Office 95 CD Key #$i:\t"
 	printf "$S-$a$b$c$d$e$f\033[0m\n\n"
+}
+
+
+validate_oem()
+{
+	echo TODO
+}
+
+
+validate_cd()
+{
+	echo TODO
 }
 
 
@@ -228,23 +241,31 @@ toString()
 
 main()
 {
-	# Argument Validation:
+	# Too many arguments validation:
 	if [[ $ARG4 != "" ]]
 	then
 		printf "Too many arguments! Try:\n\t $0 --help\n" >&2
 		exit 3
-	elif [[ $ARG1 != "oem" && $ARG1 != "cd" && $ARG1 != "-h" && $ARG1 != "--help" ]]
+	# Argument 1 validation:
+	elif [[ $ARG1 != "oem" && $ARG1 != "cd" && $ARG1 != "-h" && $ARG1 != "--help" &&
+		$ARG1 != "-l" && $ARG1 != "--license" && $ARG1 != "-v" && $ARG1 != "--validate" ]]
 	then
 		printf "Please enter a product type to generate keys for. Try:\n\t $0 --help\n" >&2
 		exit 1
-	elif [[ $ARG1 == "-h" ]] || [[ $ARG1 == "--help" ]]
+	elif [[ $ARG1 == "-h" || $ARG1 == "--help" ]]
 	then
 		help
 		exit 0
-	elif [[ $ARG1 == "-l" ]] || [[ $ARG1 == "--license" ]]
+	elif [[ $ARG1 == "-l" || $ARG1 == "--license" ]]
 	then
 		license
 		exit 0
+	elif [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
+	then
+		if [[ $ARG2 == *"OEM"* ]]
+		then echo validate_oem
+		else echo validate_cd
+		fi
 
 	# License Key Generation:
 	else
@@ -262,7 +283,7 @@ main()
 		elif [[ $ARG2 == "" ]]
 		then
 			i=1
-			if [[ $ARG3 != "-s" ]] && [[ $ARG3 != "--silent" ]]
+			if [[ $ARG3 != "-s" && $ARG3 != "--silent" ]]
 			then toString
 			fi
 			$ARG1
@@ -272,11 +293,11 @@ main()
 			printf "Invalid number-of-keys input! Try:\n\t $0 --help\n" >&2
 			exit 2
 		# Generate multiple keys:
-		else
+		else #TODO Optimize this shit, reverse if-while order, include -c param
 			i=1
 			while (( i <= ARG2 ))
 			do
-				if [[ $ARG3 != "-s" ]] && [[ $ARG3 != "--silent" ]]
+				if [[ $ARG3 != "-s" && $ARG3 != "--silent" ]]
 				then toString
 				fi
 				$ARG1
@@ -291,7 +312,7 @@ main()
 help()
 {
 printf "\
-${c2}$0 (Version 0.45)${c1}
+${CB}$0 (Version 0.46)${CN}
 Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
 This is free software; see the source code for copying conditions.
 There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
@@ -301,61 +322,72 @@ This program uses the \$RANDOM variable built into Bash in a sequence until it f
 appropriate license keys for various deprecated Microsoft products from the 1990s.
 
 
-${c2}[SYNOPSIS]
+${CB}[SYNOPSIS]
 	$0 ARG1 ARG2 ARG3
 
 	Minimal Usage:
-${c2}	$0 ARG1
+${CB}	$0 ARG1
 	
 	Examples:
-	$0 cd${c1}
+	$0 cd${CN}
 		Generate a single CD key
 
-${c2}	$0 oem --debug
-${c1}		Show the 4-algorithm step by step process of generating an OEM key
+${CB}	$0 oem --debug
+${CN}		Show the 4-algorithm step by step process of generating an OEM key
 
-${c2}	$0 oem 2**5 --silent
-${c1}		Calculate (2**5 = 32); generate 32 keys without enumeration
+${CB}	$0 oem 2**5 --silent
+${CN}		Calculate (2**5 = 32); generate 32 keys without enumeration
 
-${c2}	$0 cd 5 --silent > keys.txt
-${c1}		Generate 5 keys silently (only output the key).
+${CB}	$0 cd 5 --silent > keys.txt
+${CN}		Generate 5 keys silently (only output the key).
 		Then save the output in the file keys.txt
 
 
-${c2}[ARG 1 PARAMETERS: TYPES OF KEYS]
+${CB}[ARG 1 PARAMETERS: TYPES OF KEYS]
 	oem
-${c1}		Generate Microsoft Windows 95 / NT 4.0 Product ID (OEM) Keys.
+${CN}		Generate Microsoft Windows 95 / NT 4.0 Product ID (OEM) Keys.
 
-${c2}	cd
-${c1}		Generate Microsoft Windows 95 / NT 4.0 / Office 95 CD Keys.
+${CB}	cd
+${CN}		Generate Microsoft Windows 95 / NT 4.0 / Office 95 CD Keys.
 
-${c2}	-h, --help
-${c1}		Show this help and exit 0.
+${CB}	-v, --validate
+${CN}		Validate a CD/OEM key provided as an argument.
 
-${c2}	-l, --license
-${c1}		Display license
+${CB}	-h, --help
+${CN}		Show this help and exit 0.
+
+${CB}	-l, --license
+${CN}		Display license
 
 
-${c2}[ARG 2 PARAMETER: NUMBER OF KEYS] (optional)
-${c1}	This parameter may be omitted entirely, in which case only 1 key will be generated!
+${CB}[ARG 2 PARAMETER: NUMBER OF KEYS] (optional)
+${CN}	This parameter may be omitted entirely, in which case only 1 key will be generated!
 
-${c2}	N${c1} ∈ (1, 2**63-1)
+${CB}	N${CN} ∈ (1, 2**63-1)
 		Enter any integer between 1 and 9223372036854775807 representing
 		how many keys to be generated. A Bash integer calculation may also be entered!
 
-${c2}	-d, --debug
-${c1}		Useful for develpers, or to learn how the program works
+${CB}	KEY${CN}
+		If -v is used, you must enter an OEM or CD key to validate.
+
+${CB}	-d, --debug
+${CN}		Useful for develpers, or to learn how the program works
 
 
-${c2}[ARG 3 PARAMETER: OUTPUT LEVEL OF DETAIL] (optional)
-${c1}	This can only be used if an integer N was also given!
+${CB}[ARG 3 PARAMETER: POWER TOOLS] (optional)
+${CN}	This can only be used if an integer N was also given!
 
-${c2}	-s, --silent
-${c1}		Only output license keys, no enumeration
+${CB}	-s, --silent
+${CN}		Only output license keys, no enumeration
+
+${CB}	-c, --check
+${CN}		Uses internal validation algorithm to confirm the newly generated
+		keys are valid. (Essentially the generate algorithms reverse-engineered).
+		This process is certain to be slower, however can detect internal script errors.
 
 
-${c2}[EXIT CODES]
-${c1}	0 : Success
+${CB}[EXIT CODES]
+${CN}	0 : Success
 	1 : Argument 1 invalid: product type / help / version
 	2 : Argument 2 invalid: N number of keys / debug
 	3 : Too many arguments given
@@ -369,9 +401,9 @@ Inspiration:
 https://medium.com/@dgurney/so-you-want-to-generate-license-keys-for-old-microsoft-products-a355c8bf5408
 https://www.youtube.com/watch?v=3DCEeASKNDk
 
-${c2}Disclaimer: This script was written for educational purposes only, and the author does not
+${CB}Disclaimer: This script was written for educational purposes only, and the author does not
 encourage or endorse software piracy of any sort.
-${c1}"
+${CN}"
 }
 
 
@@ -380,11 +412,12 @@ ARG1=$1
 ARG2=$2
 ARG3=$3
 ARG4=$4
-c1=$(tput sgr0)
-c2=$(tput bold)
+CN=$(tput sgr0)
+CB=$(tput bold)
 main
 printf "\nCongratulations, you have found an end-of-script error! Please report this to
 <nick.bailuc@gmail.com> along with the version number, and the exact argument you used.\n" >&2
 exit 3
 
-#TODO: add validator
+#TODO: ARG1 = --validate
+#TODO: ARG3 = --check
