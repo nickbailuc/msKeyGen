@@ -3,12 +3,12 @@
 ##  Author = "Nick Bailuc"
 ##  Copyright = "Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>"
 ##  License = "GNU General Public License, version 3 or later"
-##	"Windows 95 Product Key Generator" (Version 0.30)
+##	"Windows 95 Product Key Generator" (Version 0.31)
 ##
 ##  There are 41713826857560 valid Product Key's for Windows 95. This program
 ##  uses Bash's $RANDOM variable in a sequence until it finds appropriate keys.
 ##  Inspiration: Youtube <<FlyTech Videos>> https://www.youtube.com/watch?v=3DCEeASKNDk
-
+##
 ##  This program is free software: you can redistribute it and/or modify
 ##  it under the terms of the GNU General Public License as published by
 ##  the Free Software Foundation, either version 3 of the License, or
@@ -22,29 +22,15 @@
 ##  You should have received a copy of the GNU General Public License
 ##  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
-VERSION=0.30
-
-init()
-{
-	a=0
-	b=0
-	c=0
-	d=0
-	e=0
-	f=1
-	D=$RANDOM
-	Y=$RANDOM
-}
+VERSION=0.31
 
 generate()
 {
-	# Initialization:
-	init
-
 	# 3-digit day of year:
+	D=$RANDOM
 	while (( D > 365 ))
 	do
-		D=$RANDOM
+		D=$(( $RANDOM % 366 ))
 	done
 	D=$(( D + 1))
 	if (( D < 10))
@@ -56,9 +42,10 @@ generate()
 	fi
 
 	# 2-digit year:
+	Y=$RANDOM
 	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
 	do
-		Y=$RANDOM
+		Y=$(( $RANDOM % 100 ))
 	done
 	if (( Y < 4 ))
 	then
@@ -66,6 +53,7 @@ generate()
 	fi
 
 	# 7-digit "divisible by 7" group:
+	a=0; b=0; c=0; d=0; e=0; f=1
 	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
 	do
 		a=$(( $RANDOM % 10 ))
@@ -89,17 +77,17 @@ generate()
 
 generate_debug()
 {
-	# Initialization:
-	init
+	# Define text format:
 	c1=$(tput bold)
 	c2=$(tput sgr0)
 	printf "${c1}Initialization complete!\n\n"
 
 	# 3-digit day of year:
 	printf "Determining 3-digit day of year:${c2}\n"
+	D=$RANDOM
 	while (( D > 365 ))
 	do
-		D=$RANDOM
+		D=$(( $RANDOM % 366 ))
 		printf "\tTrying $D\n"
 	done
 	D=$(( D + 1))
@@ -113,10 +101,11 @@ generate_debug()
 	printf "${c1}\t3-digit day of year determined to be $D!\n\n"
 
 	# 2-digit year:
+	Y=$RANDOM
 	printf "Determining 2-digit year:${c2}\n"
 	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
 	do
-		Y=$RANDOM
+		Y=$(( $RANDOM % 100 ))
 		printf "\tTrying $Y\n"
 	done
 	if (( Y < 4 ))
@@ -127,6 +116,7 @@ generate_debug()
 
 	# 7-digit "divisible by 7" group:
 	printf "Initiating divisible by 7 group:${c2}\n"
+	a=0; b=0; c=0; d=0; e=0; f=1
 	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
 	do
 		a=$(( $RANDOM % 10 ))
@@ -159,57 +149,16 @@ main()
 {
 	if [[ $ARG2 == "-d" ]]
 	then
-		if [[ $ARG1 == "" ]]
-		then
-			i=1
-			printf "Windows 95 Product Key #$i:\t"
-			generate_debug
-			exit 0
-		elif (( $ARG1 < 1 ))
-		then
-			printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n"
-			exit 1
-		else
-			i=1
-			while (( i <= $ARG1 ))
-			do
-				printf "Windows 95 Product Key #$i:\t"
-				generate_debug
-				i=$(( i + 1 ))
-			done
-			exit 0
-		fi
-
-		printf "End of script!\n"
-		exit 3
-	elif [[ $ARG2 == "-s" ]]
-	then
-		if [[ $ARG1 == "" ]]
-		then
-			i=1
-			generate
-			exit 0
-		elif (( $ARG1 < 1 ))
-		then
-			printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n"
-			exit 1
-		else
-			i=1
-			while (( i <= $ARG1 ))
-			do
-				generate
-				i=$(( i + 1 ))
-			done
-			exit 0
-		fi
-
-		printf "End of script!\n"
-		exit 3
+		generate_debug
+		exit 0
 	else
 		if [[ $ARG1 -eq "" ]]
 		then
 			i=1
-			printf "Windows 95 Product Key #$i:\t"
+			if [[ $ARG2 != "-s" ]]
+			then
+				printf "Windows 95 Product Key #$i:\t"
+			fi
 			generate
 			exit 0
 		elif (( $ARG1 < 1 ))
@@ -220,7 +169,10 @@ main()
 			i=1
 			while (( i <= $ARG1 ))
 			do
-				printf "Windows 95 Product Key #$i:\t"
+				if [[ $ARG2 != "-s" ]]
+				then
+					printf "Windows 95 Product Key #$i:\t"
+				fi
 				generate
 				i=$(( i + 1 ))
 			done
@@ -228,19 +180,20 @@ main()
 		fi
 
 		printf "End of script!\n"
-		exit 3
+		exit 2
 	fi
 }
 
-# Argument management:
+# Initialization:
 ARG1=$1
 ARG2=$2
 main
 
 # Exit Codes:
 #	0 : Success
-#	1 : -n argument error
-#	3 : End of script!
+#	1 : Invalid number of keys entry
+#	2 : End of script!
 
-#TODO arguments: -d for debug, -v for verbose, -s only output keys, -n amount_of_keys_to_generate, -s save to file
+#TODO arguments: -s only output keys, -f save to file
 #TODO: add validator
+#TODO: GNU-style arguments DONT WORK FOR SOME REASON
