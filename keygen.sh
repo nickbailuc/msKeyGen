@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.81
+VERSION=0.82
 EMAIL="<nbail040@uottawa.ca>"
 
 # DISPLAYS GPL3+ LICENSE:
@@ -235,10 +235,10 @@ cd_debug()
 
 # VALIDATE OEM KEY FROM STDIN:
 validate_oem()
-{ #TODO: str->int conversion BROKEN on OEM, but works perfectly on CD (somefuckinghow)
+{
 
 	# Format validation:
-	if [[ $(expr length $ARG2) != 23 || ${ARG2:5:6} != "-OEM-0" || ${ARG2:17:1} != "-" ]] ||
+	if [[ ${#ARG2} != 23 || ${ARG2:5:6} != "-OEM-0" || ${ARG2:17:1} != "-" ]] ||
 		[ "${ARG2:0:3}" -ne "${ARG2:0:3}" ] || [ "${ARG2:3:2}" -ne "${ARG2:3:2}" ] ||
 		[ "${ARG2:11:6}" -ne "${ARG2:11:6}" ] || [ "${ARG2:18:5}" -ne "${ARG2:18:5}" ] 2> /dev/null
 	then
@@ -250,14 +250,18 @@ validate_oem()
 
 	# Initialization:
 	KEY_TYPE="OEM"
-	S1=1${ARG2:0:3}
-	S2=1${ARG2:3:2}
-	S3=1${ARG2:11:6}
-	S4=1${ARG2:18:5}
-	S1=$(( S1 % 1000 ))
-	S2=$(( S2 % 100 ))
-	S3=$(( S2 % 1000000 ))
-	S4=$(( S3 % 100000 ))
+	DEC=${ARG2:0:3}
+	zero_remover
+	S1=$DEC
+	DEC=${ARG2:3:2}
+	zero_remover
+	S2=$DEC
+	DEC=${ARG2:11:6}
+	zero_remover
+	S3=$DEC
+	DEC=${ARG2:18:5}
+	zero_remover
+	S4=$DEC
 	g=${ARG2:16:1}
 	exitcode=0
 
@@ -265,7 +269,8 @@ validate_oem()
 	if (( S1 < 1 || S1 > 366))
 	then exitcode=100
 	fi
-	if (( S2 != 0 )) && (( S2 < 95 || S2 > 03 ))
+	if (( S2 != 95 && S2 != 96 && S2 != 97 && S2 != 98 && S2 != 99 && S2 != 0 && S2 != 1 &&
+		S2 != 2 && S2 != 3 ))
 	then exitcode=$(( exitcode + 10 ))
 	fi
 	if (( S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
@@ -294,36 +299,31 @@ validate_oem()
 
 # CHECK INTERNALLY GENERATED OEM KEY:
 check_oem()
-{ # TODO
-
-	# Format validation:
-	if [[ $(expr length $KEY) != 23 || ${KEY:5:6} != "-OEM-0" || ${KEY:17:1} != "-" ]] ||
-		[ "${KEY:0:3}" -ne "${KEY:0:3}" ] || [ "${KEY:3:2}" -ne "${KEY:3:2}" ] ||
-		[ "${KEY:11:6}" -ne "${KEY:11:6}" ] || [ "${KEY:18:5}" -ne "${KEY:18:5}" ] 2> /dev/null
-	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
-		exit 7
-	fi
-
+{
 	# Initialization:
-	S1=1${KEY:0:3}
-	S2=1${KEY:3:2}
-	S3=1${KEY:11:6}
-	S4=1${KEY:18:5}
-	S1=$(( S1 % 1000 ))
-	S2=$(( S2 % 100 ))
-	S3=$(( S2 % 1000000 ))
-	S4=$(( S3 % 100000 ))
+	DEC=${KEY:0:3}
+	zero_remover
+	S1=$DEC
+	DEC=${KEY:3:2}
+	zero_remover
+	S2=$DEC
+	DEC=${KEY:11:6}
+	zero_remover
+	S3=$DEC
+	DEC=${KEY:18:5}
+	zero_remover
+	S4=$DEC
 	g=${KEY:16:1}
 
 	# Mathematical validation:
 	if (( S1 < 1 || S1 > 366 || S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed1! $REPORT${CN}" >&2
 		exit 7
-	elif (( S2 != 0 )) && (( S2 < 95 || S2 > 03 ))
+	elif (( S2 != 95 && S2 != 96 && S2 != 97 && S2 != 98 && S2 != 99 &&
+			S2 != 0 && S2 != 1 && S2 != 2 && S2 != 3 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed2! $REPORT${CN}" >&2
 		exit 7
 	else printf "\t✓\n"
 	fi
@@ -335,7 +335,7 @@ validate_cd()
 {
 
 	# Format validation:
-	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ]] ||
+	if [[ ${#ARG2} != 11 || ${ARG2:3:1} != "-" ]] ||
 		[ "${ARG2:0:3}" -ne "${ARG2:0:3}" ] || [ "${ARG2:4:7}" -ne "${ARG2:4:7}" ] 2> /dev/null
 	then
 		printf "Incorrect format!\n" >&2
@@ -346,12 +346,13 @@ validate_cd()
 
 	# Initialization:
 	KEY_TYPE="CD"
-	S1=1${ARG2:0:3}
-	S2=1${ARG2:4:7}
-	S1=$(( S1 % 1000 ))
-	S2=$(( S2 % 10000000 ))
+	DEC=${ARG2:0:3}
+	zero_remover
+	S1=$DEC
+	DEC=${ARG2:4:7}
+	zero_remover
+	S2=$DEC
 	g=${ARG2:10:1}
-	exitcode=0
 
 	# Mathematical validation:
 	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
@@ -390,31 +391,20 @@ validate_cd()
 # CHECK INTERNALLY GENERATED CD KEY:
 check_cd()
 {
-	# Format validation:
-	if [[ $(expr length $KEY) != 11 || ${KEY:3:1} != "-" ]] ||
-		[ "${KEY:0:3}" -ne "${KEY:0:3}" ] || [ "${KEY:4:7}" -ne "${KEY:4:7}" ] 2> /dev/null
-	then
-		printf "\t✕\n${CB}Internal check algorithm failed1! $REPORT${CN}" >&2 #TODO remove 1
-		exit 7
-	fi
-
 	# Initialization:
-	DEC=${KEY:0:3} #TODO reinstate 1 prefix
-	decimal_interpreter
-	S1=DEC
-	DEC=${KEY:4:7} #TODO reinstate 1 prefix
-	decimal_interpreter
+	DEC=${KEY:0:3}
+	zero_remover
+	S1=$DEC
+	DEC=${KEY:4:7}
+	zero_remover
 	S2=$DEC
-
-#	S1=$(( S1 % 1000 )) TODO this works but should not be used
-#	S2=$(( S2 % 10000000 )) TODO
 	g=${KEY:10:1}
 
 	# Mathematical validation:
 	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ||
 		S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed2! $REPORT${CN}" >&2 #TODO remove 2
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
 	else printf "\t✓\n"
 	fi
@@ -422,10 +412,10 @@ check_cd()
 
 
 # STRIP INTEGERS OF LEADING ZEROS C STYLE:
-decimal_interpreter()
+zero_remover()
 {
 	LENDEC=${#DEC}
-	for (( i = 0; i < $LENDEC; i++ ))
+	for (( null = 0; null < $LENDEC; null++ ))
 	do
 		if (( ${DEC:0:1} == 0 ))
 		then DEC=${DEC:1:$LENDEC}
@@ -513,55 +503,43 @@ main()
 		else
 			if [[ $ARG3 == "-s" || $ARG3 == "--silent" ]]
 			then
-				i=1
-				while (( i <= ARG2 )) #TODO CHANGE TO C STYLE FOR LOOP
+				for (( i = 1; i <= ARG2; i++ ))
 				do
 					$ARG1
 					printf "$KEY\n"
-					i=$(( i + 1 ))
 				done
 			elif [[ $ARG3 == "-c" || $ARG3 == "--check" ]]
 			then
 				if [[ $ARG1 == "oem" ]]
 				then
-					i=1
-					while (( i <= ARG2 )) #TODO CHANGE TO C STYLE FOR LOOP
+					for (( i = 1; i <= ARG2; i++ ))
 					do
 						toString
 						$ARG1
 						printf $KEY
 						check_oem
-						i=$(( i + 1 ))
 					done
 				else
-					i=1
-					while (( i <= ARG2 )) #TODO CHANGE TO C STYLE FOR LOOP
+					for (( i = 1; i <= ARG2; i++ ))
 					do
 						toString
 						$ARG1
 						printf $KEY
 						check_cd
-						i=$(( i + 1 ))
 					done
 				fi
 			else
-				i=1
-				while (( i <= ARG2 )) #TODO CHANGE TO C STYLE FOR LOOP
+				for (( i = 1; i <= ARG2; i++ ))
 				do
 					toString
 					$ARG1
 					printf "$KEY\n"
-					i=$(( i + 1 ))
 				done
 			fi
 			exit 0
 		fi
 	fi
 }
-
-
-
-# TEXT AND SCRIPT INITIALIZATION #
 
 
 # DISPLAY FULL HELP:
