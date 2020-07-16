@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.80
+VERSION=0.81
 EMAIL="<nbail040@uottawa.ca>"
 
 # DISPLAYS GPL3+ LICENSE:
@@ -137,8 +137,8 @@ oem_debug()
 
 	# Export Product Key:
 	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
-	printf "\033[4mOEM Product ID:\t"
-	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\033[0m\n\n"
+	printf "OEM Product ID:\t"
+	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\n\n"
 }
 
 
@@ -228,8 +228,8 @@ cd_debug()
 
 	# Export CD Key:
 	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
-	printf "\033[4mCD Key:\t"
-	printf "$S-$a$b$c$d$e$f$g\033[0m\n\n"
+	printf "CD Key:\t"
+	printf "$S-$a$b$c$d$e$f$g\n\n"
 }
 
 
@@ -242,8 +242,9 @@ validate_oem()
 		[ "${ARG2:0:3}" -ne "${ARG2:0:3}" ] || [ "${ARG2:3:2}" -ne "${ARG2:3:2}" ] ||
 		[ "${ARG2:11:6}" -ne "${ARG2:11:6}" ] || [ "${ARG2:18:5}" -ne "${ARG2:18:5}" ] 2> /dev/null
 	then
-		printf "Incorrect format!\n\tOEM keys must resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
-		printf "\tCD Key's must resemble YYY-XXXXXXX\n" >&2
+		printf "Incorrect format!\n" >&2
+		printf "\tOEM Keys must resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
+		printf "\tCD Keys must resemble YYY-XXXXXXX\n" >&2
 		exit 4
 	fi
 
@@ -257,16 +258,16 @@ validate_oem()
 	S2=$(( S2 % 100 ))
 	S3=$(( S2 % 1000000 ))
 	S4=$(( S3 % 100000 ))
-	g=$(( S3 % 10 )) ; echo $g
+	g=${ARG2:16:1}
 	exitcode=0
 
 	# Mathematical validation:
 	if (( S1 < 1 || S1 > 366))
 	then exitcode=100
 	fi
-#	if (( S2 != 0 )) && (( S2 < 95 || S2 > 03 ))
-#	then exitcode=$(( exitcode + 10 ))
-#	fi
+	if (( S2 != 0 )) && (( S2 < 95 || S2 > 03 ))
+	then exitcode=$(( exitcode + 10 ))
+	fi
 	if (( S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then exitcode=$(( exitcode + 1 ))
 	fi
@@ -313,7 +314,7 @@ check_oem()
 	S2=$(( S2 % 100 ))
 	S3=$(( S2 % 1000000 ))
 	S4=$(( S3 % 100000 ))
-	g=$(( S3 % 10 ))
+	g=${KEY:16:1}
 
 	# Mathematical validation:
 	if (( S1 < 1 || S1 > 366 || S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
@@ -337,8 +338,9 @@ validate_cd()
 	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ]] ||
 		[ "${ARG2:0:3}" -ne "${ARG2:0:3}" ] || [ "${ARG2:4:7}" -ne "${ARG2:4:7}" ] 2> /dev/null
 	then
-		printf "Incorrect format!\n\tOEM keys must resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
-		printf "\tCD Key's must resemble YYY-XXXXXXX\n" >&2
+		printf "Incorrect format!\n" >&2
+		printf "\tOEM Keys must resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
+		printf "\tCD Keys must resemble YYY-XXXXXXX\n" >&2
 		exit 4
 	fi
 
@@ -348,7 +350,7 @@ validate_cd()
 	S2=1${ARG2:4:7}
 	S1=$(( S1 % 1000 ))
 	S2=$(( S2 % 10000000 ))
-	g=$(( S2 % 10 ))
+	g=${ARG2:10:1}
 	exitcode=0
 
 	# Mathematical validation:
@@ -392,29 +394,47 @@ check_cd()
 	if [[ $(expr length $KEY) != 11 || ${KEY:3:1} != "-" ]] ||
 		[ "${KEY:0:3}" -ne "${KEY:0:3}" ] || [ "${KEY:4:7}" -ne "${KEY:4:7}" ] 2> /dev/null
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed1! $REPORT${CN}" >&2 #TODO remove 1
 		exit 7
 	fi
 
 	# Initialization:
-	S1=1${KEY:0:3}
-	S2=1${KEY:4:7}
-	S1=$(( S1 % 1000 ))
-	S2=$(( S2 % 10000000 ))
-	g=$(( S2 % 10 ))
+	DEC=${KEY:0:3} #TODO reinstate 1 prefix
+	decimal_interpreter
+	S1=DEC
+	DEC=${KEY:4:7} #TODO reinstate 1 prefix
+	decimal_interpreter
+	S2=$DEC
+
+#	S1=$(( S1 % 1000 )) TODO this works but should not be used
+#	S2=$(( S2 % 10000000 )) TODO
+	g=${KEY:10:1}
 
 	# Mathematical validation:
 	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ||
 		S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed2! $REPORT${CN}" >&2 #TODO remove 2
 		exit 7
 	else printf "\t✓\n"
 	fi
 }
 
 
-# GENERATE APPROPRIATE STDOUT STRING ON SUCCESS:
+# STRIP INTEGERS OF LEADING ZEROS C STYLE:
+decimal_interpreter()
+{
+	LENDEC=${#DEC}
+	for (( i = 0; i < $LENDEC; i++ ))
+	do
+		if (( ${DEC:0:1} == 0 ))
+		then DEC=${DEC:1:$LENDEC}
+		fi
+	done
+}
+
+
+# GENERATE APPROPRIATE STDOUT STRING ON SUCCESS JAVA STYLE:
 toString()
 {
 	if [[ $ARG1 == "oem" ]]
@@ -494,7 +514,7 @@ main()
 			if [[ $ARG3 == "-s" || $ARG3 == "--silent" ]]
 			then
 				i=1
-				while (( i <= ARG2 ))
+				while (( i <= ARG2 )) #TODO CHANGE TO C STYLE FOR LOOP
 				do
 					$ARG1
 					printf "$KEY\n"
@@ -505,7 +525,7 @@ main()
 				if [[ $ARG1 == "oem" ]]
 				then
 					i=1
-					while (( i <= ARG2 ))
+					while (( i <= ARG2 )) #TODO CHANGE TO C STYLE FOR LOOP
 					do
 						toString
 						$ARG1
@@ -515,7 +535,7 @@ main()
 					done
 				else
 					i=1
-					while (( i <= ARG2 ))
+					while (( i <= ARG2 )) #TODO CHANGE TO C STYLE FOR LOOP
 					do
 						toString
 						$ARG1
@@ -526,7 +546,7 @@ main()
 				fi
 			else
 				i=1
-				while (( i <= ARG2 ))
+				while (( i <= ARG2 )) #TODO CHANGE TO C STYLE FOR LOOP
 				do
 					toString
 					$ARG1
@@ -650,7 +670,7 @@ ${CN}	0 : Success
 usage()
 {
 printf "\
-${CB}$0 (Version $VERSION)
+${CB}$0 (Version $VERSION), see CHANGELOG.html for more information!
 
 Copyright (C) 2020 Nick Bailuc, $EMAIL
 This is free software; see the source code for copying conditions.
@@ -692,7 +712,7 @@ Try $0 --help for more information.\n"
 
 
 REPORT="\nPlease report this to $EMAIL along with
-the version ($VERSION) and arguments ($1 $2 $3) used.\n"
+the version ($VERSION) and arguments used ($1 $2 $3).\n"
 
 
 # Initialization:
