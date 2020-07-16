@@ -318,12 +318,12 @@ check_oem()
 	# Mathematical validation:
 	if (( S1 < 1 || S1 > 366 || S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed1! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
 	elif (( S2 != 95 && S2 != 96 && S2 != 97 && S2 != 98 && S2 != 99 &&
 			S2 != 0 && S2 != 1 && S2 != 2 && S2 != 3 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed2! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
 	else printf "\t✓\n"
 	fi
