@@ -85,7 +85,7 @@ to check the validity of a licence key.
 ## [ARG 3 PARAMETER: POWER TOOLS] (optional)
 	This can only be used if an integer N was also given!
 
-```	-s, --silent```
+	-s, --silent
 		Only output license keys, no enumeration
 
 	-c, --check
