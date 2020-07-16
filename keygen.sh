@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.61
-
+VERSION=0.62
+#TODO ADD 1-SENTANCE DESCRIPTION ABOVE EACH FUNCTION
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
 Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
@@ -226,14 +226,105 @@ cd_debug()
 
 
 validate_oem()
-{
-	echo TODO
+{ #TODO: str->int conversion BROKEN on OEM, but works perfectly on CD (somefuckinghow)
+	# Initialization:
+	S1=${ARG2:0:3}
+	S2=${ARG2:3:2}
+	S3=${ARG2:11:6}
+	S4=${ARG2:18:5}
+
+#	S1=1${ARG2:0:3}
+#	S2=1${ARG2:3:2}
+#	S3=1${ARG2:11:6}
+#	S4=1${ARG2:18:5}
+#	S1=$(( S1 % 1000 ))
+#	S2=$(( S2 % 100 ))
+#	S3=$(( S2 % 1000000 ))
+#	S4=$(( S3 % 100000 ))
+	g=$(( S3 % 10 ))
+
+	# Format validation:
+	if [[ $(expr length $ARG2) != 23 || ${ARG2:5:6} != "-OEM-0" || ${ARG2:17:1} != "-" ]] ||
+		[ "$S1" -ne "$S1" ] || [ "$S2" -ne "$S2" ] ||
+		[ "$S3" -ne "$S3" ] || [ "$S4" -ne "$S4" ] 2> /dev/null
+	then
+		printf "Incorrect format! OEM keys resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
+		exit 4
+	fi
+
+	# Mathematical validation:
+	if (( S1 < 1 || S1 > 366))
+	then exitcode=100
+	fi
+	if (( S2 != 0 )) && (( S2 < 95 || S2 > 03 ))
+	then exitcode=$(( exitcode + 10 ))
+	fi
+	if (( S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
+	then exitcode=$(( exitcode + 1 ))
+	fi
+
+	# Output:
+	if (( exitcode == 0 ))
+	then toString
+	else
+		#Error handling:
+		printf "This OEM Key is invalid:\n" >&2
+		if (( exitcode / 100 == 1 ))
+		then printf "\tThe day of year ($S1) must be between 1 and 366!\n" >&2
+		fi
+		if (( exitcode / 10 % 10 == 1 ))
+		then printf "\tThe year ($S2) must be between 1995 and 2003 represented in 2-digits!\n" >&2
+		fi
+		if (( exitcode % 10 == 1 ))
+		then printf "\tThe 0$S3 part must be divisible by 7 and not end in 0, 8, or 9!\n" >&2
+		fi
+		exit 5
+	fi
 }
 
 
 check_oem()
 {
-	echo TODO
+	# Initialization:
+	S1=${KEY:0:3}
+	S2=${KEY:3:2}
+	S3=${KEY:11:6}
+	S4=${KEY:18:5}
+
+#	S1=1${KEY:0:3}
+#	S2=1${KEY:3:2}
+#	S3=1${KEY:11:6}
+#	S4=1${KEY:18:5}
+#	S1=$(( S1 % 1000 ))
+#	S2=$(( S2 % 100 ))
+#	S3=$(( S2 % 1000000 ))
+#	S4=$(( S3 % 100000 ))
+	g=$(( S3 % 10 ))
+
+	# Format validation:
+	if [[ $(expr length $KEY) != 23 || ${KEY:5:6} != "-OEM-0" || ${KEY:17:1} != "-" ]] ||
+		[ "$S1" -ne "$S1" ] || [ "$S2" -ne "$S2" ] ||
+		[ "$S3" -ne "$S3" ] || [ "$S4" -ne "$S4" ] 2> /dev/null
+	then
+		printf "Incorrect format! OEM keys resemble DDDYY-OEM-0XXXXXX-ZZZZZ\n" >&2
+		exit 7
+	fi
+
+	# Mathematical validation:
+	if (( S1 < 1 || S1 > 366))
+	then
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		exit 7
+	elif (( S2 != 0 )) && (( S2 < 95 || S2 > 03 ))
+	then
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		exit 7
+	elif (( S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
+	then
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		exit 7
+	fi
+	printf "\t✓\n"
 }
 
 
@@ -241,16 +332,16 @@ validate_cd()
 {
 	# Initialization:
 	S1=1${ARG2:0:3}
-	S1=$(( S1 % 1000 ))
 	S2=1${ARG2:4:7}
+	S1=$(( S1 % 1000 ))
 	S2=$(( S2 % 10000000 ))
 	g=$(( S2 % 10 ))
 
 	# Format validation:
 	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ]] ||
-		! [ "$S1" -eq "$S1" ] || ! [ "$S2" -eq "$S2" ] 2> /dev/null
+		[ "$S1" -ne "$S1" ] || [ "$S2" -ne "$S2" ] 2> /dev/null
 	then
-		printf "Incorrect format!\n" >&2
+		printf "Incorrect format! CD Key's must resemble YYY-XXXXXXX\n" >&2
 		exit 4
 	fi
 
@@ -274,7 +365,7 @@ validate_cd()
 			exit 5
 		elif (( exitcode == 2 ))
 		then
-			printf " The $S2 part must be divisible by 7 and not end in 0, 8, or 9\n" >&2
+			printf " The $S2 part must be divisible by 7 and not end in 0, 8, or 9!\n" >&2
 			exit 5
 		elif (( exitcode == 3 ))
 		then
@@ -292,27 +383,27 @@ check_cd()
 {
 	# Initialization:
 	S1=1${KEY:0:3}
-	S1=$(( S1 % 1000 ))
 	S2=1${KEY:4:7}
+	S1=$(( S1 % 1000 ))
 	S2=$(( S2 % 10000000 ))
 	g=$(( S2 % 10 ))
 
 	# Format validation:
 	if [[ $(expr length $KEY) != 11 || ${KEY:3:1} != "-" ]] ||
-		! [ "$S1" -eq "$S1" ] || ! [ "$S2" -eq "$S2" ] 2> /dev/null
+		[ "$S1" -ne "$S1" ] || [ "$S2" -ne "$S2" ] 2> /dev/null
 	then
-		printf "Incorrect format!\n" >&2
-		exit 4
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		exit 7
 	fi
 
 	# Mathematical validation:
 	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
 	then
-		printf "\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
 	elif (( S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
-		printf "✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
 	fi
 	printf "\t✓\n"
@@ -438,6 +529,9 @@ main()
 }
 
 
+# TEXT AND SCRIPT INITIALIZATION #
+
+
 help()
 {
 printf "\
@@ -518,6 +612,7 @@ ${CN}		Uses internal validation algorithm to confirm the newly generated
 
 ${CB}[EXIT CODES]
 ${CN}	0 : Success
+
 	Argument Errors:
 	1 : Argument 1 invalid: product type / help / version
 	2 : Argument 2 invalid: N number of keys / debug
