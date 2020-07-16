@@ -29,7 +29,7 @@ to check the validity of a licence key.
 
 # Manual:
 
-## [SYNOPSIS]
+## 	[SYNOPSIS]
 
 	./keygen.sh ARG1 ARG2 ARG3
 
