@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.54
+VERSION=0.60
 
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
@@ -240,16 +240,17 @@ check_oem()
 validate_cd()
 {
 	# Initialization:
-	S1=${ARG2:0:3}
-	S2=${ARG2:4:7}
+	S1=1${ARG2:0:3}
+	S1=$(( S1 % 1000 ))
+	S2=1${ARG2:4:7}
+	S2=$(( S2 % 10000000 ))
 	g=$(( S2 % 10 ))
 
 	# Format validation:
-	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ]] #TODO: CHECK IF S1&S2 are ALL INTS
-		"$S1" -eq "$S1" || "$S2" -eq "$S2" ]]
+	if [[ $(expr length $ARG2) != 11 || ${ARG2:3:1} != "-" ]] ||
+		! [ "$S1" -eq "$S1" ] || ! [ "$S2" -eq "$S2" ] 2> /dev/null
 	then
 		printf "Incorrect format!\n" >&2
-		echo S1 $S1 S2 $S2
 		exit 4
 	fi
 
@@ -289,8 +290,38 @@ validate_cd()
 
 check_cd()
 {
-	echo TODO
-} # 	exit 7 : Internal check failed!
+	# Initialization:
+	S1=1${KEY:0:3}
+	S1=$(( S1 % 1000 ))
+	S2=1${KEY:4:7}
+	S2=$(( S2 % 10000000 ))
+	g=$(( S2 % 10 ))
+
+	# Format validation:
+	if [[ $(expr length $KEY) != 11 || ${KEY:3:1} != "-" ]] ||
+		! [ "$S1" -eq "$S1" ] || ! [ "$S2" -eq "$S2" ] 2> /dev/null
+	then
+		printf "Incorrect format!\n" >&2
+		echo $S1 $S2
+		exit 4
+	fi
+
+	# Mathematical validation:
+	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
+	then exitcode=1
+	fi
+	if (( S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
+	then exitcode=$(( exitcode + 2 ))
+	fi
+
+	# Output:
+	if (( exitcode == 0 ))
+	then printf "\t✓\n"
+	else
+		printf "\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		exit 7
+	fi
+} # 	exit 7 : Internal check algorithm failed!
 
 
 toString()
@@ -381,7 +412,7 @@ main()
 					do
 						toString
 						$ARG1
-						printf "$KEY\n"
+						printf $KEY
 						check_oem
 						i=$(( i + 1 ))
 					done
@@ -391,7 +422,7 @@ main()
 					do
 						toString
 						$ARG1
-						printf "$KEY\n"
+						printf $KEY
 						check_cd
 						i=$(( i + 1 ))
 					done
@@ -557,7 +588,7 @@ Try $0 --help for more information.\n"
 }
 
 
-REPORT="Please report this to <nick.bailuc@gmail.com> along with
+REPORT="\nPlease report this to <nick.bailuc@gmail.com> along with
 the version ($VERSION) and arguments ($1 $2 $3) used.\n"
 
 
