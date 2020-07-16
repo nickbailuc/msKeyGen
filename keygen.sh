@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.51
+VERSION=0.52
 
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
@@ -131,7 +131,7 @@ oem_debug()
 
 	# Export Product Key:
 	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
-	printf "\033[4mWindows 95 / NT 4.0 Product ID #$i:\t"
+	printf "\033[4mWindows 95 / NT 4.0 Product ID:\t"
 	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\033[0m\n\n"
 }
 
@@ -220,7 +220,7 @@ cd_debug()
 
 	# Export CD Key:
 	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
-	printf "\033[4mWindows 95 / NT 4.0 / Office 95 CD Key #$i:\t"
+	printf "\033[4mWindows 95 / NT 4.0 / Office 95 CD Key:\t"
 	printf "$S-$a$b$c$d$e$f$g\033[0m\n\n"
 }
 
@@ -234,8 +234,14 @@ validate_oem()
 validate_cd()
 {
 	# Initialization:
-	S1=${ARG2:0:3}
-	S2=${ARG2:4:7}
+	if [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
+	then
+		S1=${ARG2:0:3}
+		S2=${ARG2:4:7}
+	else
+		S1=${KEY:0:3}
+		S2=${KEY:4:7}
+	fi
 	g=$(( S2 % 10 ))
 
 	# Format validation:
@@ -294,8 +300,7 @@ main()
 	elif [[ $ARG1 != "oem" && $ARG1 != "cd" && $ARG1 != "-h" && $ARG1 != "--help" &&
 		$ARG1 != "-l" && $ARG1 != "--license" && $ARG1 != "-v" && $ARG1 != "--validate" ]]
 	then
-#		printf "Please enter a product type to generate keys for. Try:\n\t $0 --help\n" >&2
-		help
+		usage
 		exit 1
 	elif [[ $ARG1 == "-h" || $ARG1 == "--help" ]]
 	then
@@ -344,8 +349,7 @@ main()
 			exit 2
 		# Generate multiple keys:
 		else
-#TODO Optimize this shit, reverse if-while order, include -c param
-			if [[ $ARG3 != "-s" && $ARG3 != "--silent" ]]
+			if [[ $ARG3 == "-s" || $ARG3 == "--silent" ]]
 			then
 				i=1
 				while (( i <= ARG2 ))
@@ -355,39 +359,41 @@ main()
 					printf "$KEY\n"
 					i=$(( i + 1 ))
 				done
-			elif [[ $ARG3 != "-c" && $ARG3 != "--check" ]]
+			elif [[ $ARG3 == "-c" || $ARG3 == "--check" ]]
 			then
+				if [[ $ARG1 == "oem" ]]
+				then
+					i=1
+					while (( i <= ARG2 ))
+					do
+						toString
+						$ARG1
+						printf "$KEY\n"
+						validate_oem
+						i=$(( i + 1 ))
+					done
+				else
+					i=1
+					while (( i <= ARG2 ))
+					do
+						toString
+						$ARG1
+						printf "$KEY\n"
+						validate_cd
+						i=$(( i + 1 ))
+					done
+				fi
+			else
+				i=1
 				while (( i <= ARG2 ))
 				do
 					toString
 					$ARG1
 					printf "$KEY\n"
-					validate_cd #TODO FUCK, HERE GOES ANOTHER LEVEL IF-THEN TESTS
-					i=$(( i + 1 ))
-				done
-			elif [[ $ARG3 != "" ]]
-			then
-				while (( i <= ARG2 ))
-				do
-					toString
-					$ARG1
-					printf KEY
 					i=$(( i + 1 ))
 				done
 			fi
 			exit 0
-##################################################################
-#			i=1
-#			while (( i <= ARG2 ))
-#			do
-#				if [[ $ARG3 != "-s" && $ARG3 != "--silent" ]]
-#				then toString
-#				fi
-#				$ARG1
-#				printf $KEY
-#				i=$(( i + 1 ))
-#			done
-#			exit 0
 		fi
 	fi
 }
@@ -492,6 +498,45 @@ https://www.youtube.com/watch?v=3DCEeASKNDk
 ${CB}Disclaimer: This script was written for educational purposes only, and the author does not
 encourage or endorse software piracy of any sort.
 ${CN}"
+}
+
+
+usage()
+{
+printf "\
+${CB}$0 (Version $VERSION)
+
+SYNOPSIS:	$0 ARG1 ARG2 ARG3
+Minimal Usage:${CB}	$0 ARG1
+
+${CB}[ARG 1 PARAMETERS: TYPES OF KEYS]
+
+	oem${CN}	Generate Microsoft Windows 95 / NT 4.0 Product ID (OEM) Keys.${CB}
+	cd${CN}	Generate Microsoft Windows 95 / NT 4.0 / Office 95 CD Keys.${CB}
+	-v, --validate	${CN}Validate a CD/OEM key provided as an argument.
+${CB}	-h, --help	${CN}Show this help and exit 0.
+${CB}	-l, --license	${CN}Display license
+
+${CB}[ARG 2 PARAMETER: NUMBER OF KEYS] (optional)
+${CN}	This parameter may be omitted entirely, in which case only 1 key will be generated!
+
+${CB}	N${CN} ∈ (1, 2**63-1)
+		Enter any integer between 1 and 9223372036854775807 representing
+		how many keys to be generated. A Bash integer calculation may also be entered!
+
+${CB}	KEY${CN}	If -v is used, you must enter an OEM or CD key to validate.
+
+${CB}	-d, --debug${CN}	Useful for develpers, or to learn how the program works
+
+${CB}[ARG 3 PARAMETER: POWER TOOLS] (optional)
+${CN}	This can only be used if an integer N was also given!
+
+${CB}	-s, --silent${CN}	Only output license keys, no enumeration
+${CB}	-c, --check${CN}	Uses internal validation algorithm to confirm the newly generated keys are
+			valid. (Essentially the algorithms reverse-engineered). This process
+			is certain to be slower, however can detect internal script errors.
+
+Try $0 --help for more information.\n"
 }
 
 
