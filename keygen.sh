@@ -1,11 +1,11 @@
 #!/bin/bash
 #SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.42
+VERSION=0.43
 
 help()
 {
 printf "\
-$0 (Version 0.42)
+$0 (Version 0.43)
 Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
 This is free software; see the source code for copying conditions.
 There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
@@ -18,14 +18,19 @@ appropriate license keys for various deprecated Microsoft products from the 1990
 	[SYNOPSIS]
 	$0 ARG1 ARG2 ARG3
 	
-	Example: $0 oem 10
-		Generate 10 keys silently (stdout only keys without enumeration)
+	Examples:
+	$0 oem
+		Generate a single OEM key
 
-	Example: $0 cd 2**5 --silent
-		Calculate 2**5 (=32) and generate that many keys.
+	$0 oem 2**5 --silent
+		Calculate (2**5 = 32); generate 32 keys without enumeration
+
+	$0 cd 5 --silent > keys.txt
+		Generate 5 keys silently (only output the key).
+		Then save the output in the file keys.txt
 
 
-	[ARG1 PARAMETERS]
+	[ARG 1 PARAMETERS: TYPES OF KEYS]
 	oem
 		Generate Microsoft Windows 95 / NT 4.0 Product ID (OEM) Keys.
 
@@ -39,18 +44,25 @@ appropriate license keys for various deprecated Microsoft products from the 1990
 		Display license
 
 
-	[ARG2 PARAMETERS]
-	This parameter may be ommited entirely, in which case only 1 key will be generated
+	[ARG 2 PARAMETER: NUMBER OF KEYS]
+	This parameter may be ommited entirely, in which case only 1 key will be generated!
 
-	N∈(1, 2**63-1)
+	N ∈ (1, 2**63-1)
 		Enter any integer between 1 and 9223372036854775807 representing
 		how many keys to be generated. A Bash integer calculation may also be entered!
+
+
+	[ARG 3 PARAMETER: OUTPUT LEVEL OF DETAIL]
+	This can only be used if an integer N was also given!
+
+	-s, --silent
+		Only output license key, no enumeration
 
 
 	[EXIT CODES]
 	0 : Success
 	1 : Invalid argument: product type
-	2 : Invalid argument: number of keys
+	2 : Invalid argument: N number of keys
 	3 : End of script!
 		The script is set to exit 0 after completion of generation. If the script
 		reaches the end (outside of main() function) the script will exit 2
@@ -132,13 +144,26 @@ oem()
 cd()
 {
 	# 3-digit segment:
-	for T in {3..9}
+	S=$(( RANDOM % 1000 ))
+	while (( S == 333 || S == 444 || S == 555 || S == 666 || S == 777 || S == 888 || S == 999 ))
 	do
-		if (( S == (T * 111)))
-		then
-			S=$(( RANDOM % 1000 ))
-		fi
+		S=$(( RANDOM % 1000 ))
 	done
+
+	# 7-digit "divisible by 7" segment:
+	a=0; b=0; c=0; d=0; e=0; f=1
+	while (( (100000*a + 10000*b + 1000*c + 100*d + 10*e + f) % 7 != 0 ))
+	do
+		a=$(( RANDOM % 10 ))
+		b=$(( RANDOM % 10 ))
+		c=$(( RANDOM % 10 ))
+		d=$(( RANDOM % 10 ))
+		e=$(( RANDOM % 10 ))
+		f=$(( RANDOM % 7 + 1 ))
+	done
+
+	# Export CD Key:
+	printf "$S-$a$b$c$d$e$f\n"
 }
 
 
@@ -154,8 +179,8 @@ toString()
 
 main()
 {
-	# ARG1 validation:
-	if [[ $ARG1 != "oem" ]] && [[ $ARG1 != "cd" ]]
+	# ARG1 Validation:
+	if [[ $ARG1 != "oem" && $ARG1 != "cd" && $ARG1 != "-h" && $ARG1 != "--help" ]]
 	then
 		printf "Please enter a product type to generate keys for. Try:\n $0 --help\n" >&2
 		exit 1
@@ -171,6 +196,7 @@ main()
 
 	# License Key Generation:
 	else
+		# Generate 1 key:
 		if [[ $ARG2 -eq "" ]]
 		then
 			i=1
@@ -180,10 +206,12 @@ main()
 			fi
 			$ARG1
 			exit 0
+		# ARG2 Validation:
 		elif (( ARG2 < 1 ))
 		then
 			printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n" >&2
 			exit 2
+		# Generate multiple keys:
 		else
 			i=1
 			while (( i <= ARG2 ))
