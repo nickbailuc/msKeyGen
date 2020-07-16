@@ -1,11 +1,11 @@
 #!/bin/bash
 #SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.41
+VERSION=0.42
 
 help()
 {
 printf "\
-$0 (Version 0.41)
+$0 (Version 0.42)
 Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
 This is free software; see the source code for copying conditions.
 There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
@@ -18,25 +18,19 @@ appropriate license keys for various deprecated Microsoft products from the 1990
 	[SYNOPSIS]
 	$0 ARG1 ARG2 ARG3
 	
-	Example: $0 95o 10
+	Example: $0 oem 10
 		Generate 10 keys silently (stdout only keys without enumeration)
 
-	Example: $0 95c 2**5 --silent
+	Example: $0 cd 2**5 --silent
 		Calculate 2**5 (=32) and generate that many keys.
 
 
 	[ARG1 PARAMETERS]
-	w95oem
-		Generate Windows 95 Product ID (OEM) Keys.
+	oem
+		Generate Microsoft Windows 95 / NT 4.0 Product ID (OEM) Keys.
 
-	w95cd
-		Generate Windows 95 CD Keys.
-
-	wntoem
-		Generate Windows NT 4.0 Workstation Product ID (OEM) Keys.
-
-	wntcd
-		Generate Windows NT 4.0 Server CD Keys.
+	cd
+		Generate Microsoft Windows 95 / NT 4.0 / Office 95 CD Keys.
 
 	-h, --help
 		Show this help and exit 0.
@@ -90,23 +84,9 @@ printf "\
 }
 
 
-w95oem()
+oem()
 {
 	# 3-digit day of year:
-#	D=$RANDOM
-#	while (( D > 365 ))
-#	do
-#		D=$(( RANDOM % 366 ))
-#	done
-#	D=$(( D + 1))
-#	if (( D < 10))
-#	then
-#		D=00$D
-#	elif (( D < 100 ))
-#	then
-#		D=0$D
-#	fi
-
 	D=$(( RANDOM % 366 + 1))
 	if (( D < 10)) 
 	then
@@ -115,17 +95,6 @@ w95oem()
 	then
 		D=0$D
 	fi
-
-#	# 2-digit year:
-#	Y=$RANDOM
-#	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
-#	do
-#		Y=$(( RANDOM % 100 ))
-#	done
-#	if (( Y < 4 ))
-#	then
-#		Y=0$Y
-#	fi
 
 	# 2-digit year:
 	Y=$(( RANDOM % 9 ))
@@ -160,34 +129,25 @@ w95oem()
 }
 
 
-w95cd()
+cd()
 {
-	echo TODO
-}
-
-
-wntoem()
-{
-	echo TODO
-}
-
-
-wntcd()
-{
-	echo TODO
+	# 3-digit segment:
+	for T in {3..9}
+	do
+		if (( S == (T * 111)))
+		then
+			S=$(( RANDOM % 1000 ))
+		fi
+	done
 }
 
 
 toString()
 {
-	if [[ $ARG1 == "w95oem" ]]
-	then printf "Windows 95 OEM Product ID #$i:\t"
-	elif [[ $ARG1 == "w95cd" ]]
-	then printf "Windows 95 CD Key #$i:\t"
-	elif [[ $ARG1 == "wntoem" ]]
-	then printf "Windows NT 4.0 Product ID #$i:\t"
-	elif [[ $ARG1 == "wntcd" ]]
-	then printf "Windows NT 4.0 CD Key #$i:\t"
+	if [[ $ARG1 == "oem" ]]
+	then printf "Windows 95 / NT 4.0 OEM Product ID #$i:\t"
+	elif [[ $ARG1 == "cd" ]]
+	then printf "Windows 95 / NT 4.0 / Office 95 CD Key #$i:\t"
 	fi
 }
 
@@ -195,8 +155,7 @@ toString()
 main()
 {
 	# ARG1 validation:
-	if [[ $ARG1 != "w95oem" ]] && [[ $ARG1 != "w95cd" ]] &&
-		[[ $ARG1 != "wntoem" ]] && [[ $ARG1 != "wntcd" ]]
+	if [[ $ARG1 != "oem" ]] && [[ $ARG1 != "cd" ]]
 	then
 		printf "Please enter a product type to generate keys for. Try:\n $0 --help\n" >&2
 		exit 1
