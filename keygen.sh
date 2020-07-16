@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.60
+VERSION=0.61
 
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
@@ -302,26 +302,21 @@ check_cd()
 		! [ "$S1" -eq "$S1" ] || ! [ "$S2" -eq "$S2" ] 2> /dev/null
 	then
 		printf "Incorrect format!\n" >&2
-		echo $S1 $S2
 		exit 4
 	fi
 
 	# Mathematical validation:
 	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ))
-	then exitcode=1
-	fi
-	if (( S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
-	then exitcode=$(( exitcode + 2 ))
-	fi
-
-	# Output:
-	if (( exitcode == 0 ))
-	then printf "\t✓\n"
-	else
+	then
 		printf "\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
 		exit 7
+	elif (( S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
+	then
+		printf "✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		exit 7
 	fi
-} # 	exit 7 : Internal check algorithm failed!
+	printf "\t✓\n"
+}
 
 
 toString()
