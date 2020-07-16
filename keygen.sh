@@ -1,14 +1,15 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.50
+VERSION=0.51
+
 license()
-{
-printf "\
-${CB}$0 (Version 0.50)${CN}
+{ printf "${CB}$0 (Version $VERSION)${CN}
 Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
 
 This program uses the \$RANDOM variable built into Bash in a sequence until it finds
 appropriate license keys for various deprecated Microsoft products from the 1990s.
+The same algorithms may also be used to check the validity of a licence key.
+See $0 --help for more information.
 
 	\"GNU General Public License version 3 or later\"\n
 	This program is free software: you can redistribute it and/or modify
@@ -22,8 +23,7 @@ appropriate license keys for various deprecated Microsoft products from the 1990
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.\n\n"
 }
 
 
@@ -64,7 +64,7 @@ oem()
 	r5=$(( RANDOM % 10 ))
 
 	# Export Product Key:
-	KEY="$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\n"
+	KEY="$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5"
 }
 
 
@@ -164,7 +164,7 @@ cd()
 	done
 
 	# Export CD Key:
-	KEY="$S-$a$b$c$d$e$f$g\n"
+	KEY="$S-$a$b$c$d$e$f$g"
 }
 
 
@@ -261,7 +261,12 @@ validate_cd()
 	# Output:
 	if (( ! exitcode ))
 	then toString
-	else exit 5
+	else
+		if [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
+		then
+			printf $KEY
+			
+		fi
 	fi
 }
 
@@ -289,7 +294,8 @@ main()
 	elif [[ $ARG1 != "oem" && $ARG1 != "cd" && $ARG1 != "-h" && $ARG1 != "--help" &&
 		$ARG1 != "-l" && $ARG1 != "--license" && $ARG1 != "-v" && $ARG1 != "--validate" ]]
 	then
-		printf "Please enter a product type to generate keys for. Try:\n\t $0 --help\n" >&2
+#		printf "Please enter a product type to generate keys for. Try:\n\t $0 --help\n" >&2
+		help
 		exit 1
 	elif [[ $ARG1 == "-h" || $ARG1 == "--help" ]]
 	then
@@ -330,25 +336,58 @@ main()
 			then toString
 			fi
 			$ARG1
-			printf $KEY
+			printf "$KEY\n"
 			exit 0
 		elif (( ARG2 < 1 ))
 		then
 			printf "Invalid number-of-keys input! Try:\n\t $0 --help\n" >&2
 			exit 2
 		# Generate multiple keys:
-		else #TODO Optimize this shit, reverse if-while order, include -c param
-			i=1
-			while (( i <= ARG2 ))
-			do
-				if [[ $ARG3 != "-s" && $ARG3 != "--silent" ]]
-				then toString
-				fi
-				$ARG1
-				printf $KEY
-				i=$(( i + 1 ))
-			done
+		else
+#TODO Optimize this shit, reverse if-while order, include -c param
+			if [[ $ARG3 != "-s" && $ARG3 != "--silent" ]]
+			then
+				i=1
+				while (( i <= ARG2 ))
+				do
+					toString
+					$ARG1
+					printf "$KEY\n"
+					i=$(( i + 1 ))
+				done
+			elif [[ $ARG3 != "-c" && $ARG3 != "--check" ]]
+			then
+				while (( i <= ARG2 ))
+				do
+					toString
+					$ARG1
+					printf "$KEY\n"
+					validate_cd #TODO FUCK, HERE GOES ANOTHER LEVEL IF-THEN TESTS
+					i=$(( i + 1 ))
+				done
+			elif [[ $ARG3 != "" ]]
+			then
+				while (( i <= ARG2 ))
+				do
+					toString
+					$ARG1
+					printf KEY
+					i=$(( i + 1 ))
+				done
+			fi
 			exit 0
+##################################################################
+#			i=1
+#			while (( i <= ARG2 ))
+#			do
+#				if [[ $ARG3 != "-s" && $ARG3 != "--silent" ]]
+#				then toString
+#				fi
+#				$ARG1
+#				printf $KEY
+#				i=$(( i + 1 ))
+#			done
+#			exit 0
 		fi
 	fi
 }
@@ -357,7 +396,7 @@ main()
 help()
 {
 printf "\
-${CB}$0 (Version 0.50)${CN}
+${CB}$0 (Version $VERSION)${CN}
 Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
 This is free software; see the source code for copying conditions.
 There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
@@ -365,6 +404,7 @@ FITNESS FOR A PARTICULAR PURPOSE.
 
 This program uses the \$RANDOM variable built into Bash in a sequence until it finds
 appropriate license keys for various deprecated Microsoft products from the 1990s.
+The same algorithms may also be used to check the validity of a licence key.
 
 
 ${CB}[SYNOPSIS]
