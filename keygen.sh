@@ -1,11 +1,11 @@
 #!/bin/bash
 #SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.40
+VERSION=0.41
 
 help()
 {
 printf "\
-$0 (Version 0.40)
+$0 (Version 0.41)
 Copyright (C) 2020 Nick Bailuc, <nick.bailuc@gmail.com>
 This is free software; see the source code for copying conditions.
 There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
@@ -55,8 +55,9 @@ appropriate license keys for various deprecated Microsoft products from the 1990
 
 	[EXIT CODES]
 	0 : Success
-	1 : Invalid argument: number of keys
-	2 : End of script!
+	1 : Invalid argument: product type
+	2 : Invalid argument: number of keys
+	3 : End of script!
 		The script is set to exit 0 after completion of generation. If the script
 		reaches the end (outside of main() function) the script will exit 2
 		indicating an error has occured!
@@ -92,13 +93,22 @@ printf "\
 w95oem()
 {
 	# 3-digit day of year:
-	D=$RANDOM
-	while (( D > 365 ))
-	do
-		D=$(( RANDOM % 366 ))
-	done
-	D=$(( D + 1))
-	if (( D < 10))
+#	D=$RANDOM
+#	while (( D > 365 ))
+#	do
+#		D=$(( RANDOM % 366 ))
+#	done
+#	D=$(( D + 1))
+#	if (( D < 10))
+#	then
+#		D=00$D
+#	elif (( D < 100 ))
+#	then
+#		D=0$D
+#	fi
+
+	D=$(( RANDOM % 366 + 1))
+	if (( D < 10)) 
 	then
 		D=00$D
 	elif (( D < 100 ))
@@ -106,15 +116,24 @@ w95oem()
 		D=0$D
 	fi
 
+#	# 2-digit year:
+#	Y=$RANDOM
+#	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
+#	do
+#		Y=$(( RANDOM % 100 ))
+#	done
+#	if (( Y < 4 ))
+#	then
+#		Y=0$Y
+#	fi
+
 	# 2-digit year:
-	Y=$RANDOM
-	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
-	do
-		Y=$(( RANDOM % 100 ))
-	done
+	Y=$(( RANDOM % 9 ))
 	if (( Y < 4 ))
 	then
 		Y=0$Y
+	else
+		Y=$(( Y + 91 ))
 	fi
 
 	# 7-digit "divisible by 7" segment:
@@ -126,7 +145,7 @@ w95oem()
 		c=$(( RANDOM % 10 ))
 		d=$(( RANDOM % 10 ))
 		e=$(( RANDOM % 10 ))
-		f=$(( RANDOM % 10 ))
+		f=$(( RANDOM % 7 + 1 ))
 	done
 
 	# 5-digit "random" segment:
@@ -175,6 +194,13 @@ toString()
 
 main()
 {
+	# ARG1 validation:
+	if [[ $ARG1 != "w95oem" ]] && [[ $ARG1 != "w95cd" ]] &&
+		[[ $ARG1 != "wntoem" ]] && [[ $ARG1 != "wntcd" ]]
+	then
+		printf "Please enter a product type to generate keys for. Try:\n $0 --help\n" >&2
+		exit 1
+	fi
 	if [[ $ARG1 == "-h" ]] || [[ $ARG1 == "--help" ]]
 	then
 		help
@@ -198,7 +224,7 @@ main()
 		elif (( ARG2 < 1 ))
 		then
 			printf "Invalid input! Please enter an integer between 1 and (2^63)-1 (inclusively)\n" >&2
-			exit 1
+			exit 2
 		else
 			i=1
 			while (( i <= ARG2 ))
@@ -221,6 +247,6 @@ ARG2=$2
 ARG3=$3
 main
 printf "End of script error!\n" >&2
-exit 2
+exit 3
 
 #TODO: add validator
