@@ -1,0 +1,199 @@
+<pre>
+[DISCLAIMER]
+It should be noted that this was originally meant to generate Windows 95 OEM keys,
+however there is a major error in the algorithm that makes the generated keys
+different enough such that they are invalid for Windows 95 activation. Furthermore,
+license keys are not subject to copyright or trademarking, and this does not include
+any proprietary code from Microsoft. Therefore, some bits and mentions of Microsoft
+are retained in the older variants of this program.
+
+The fundamental difference between the keys this program generates and those of Windows 95
+are that at the divisible-by-7 segment (here refered to as $S3) must have a digit sum
+divisible by 7, rather than a linear combination.
+
+My goal of writing this in BASH was to solidify my knowledge of the language, and learn
+more about what it can and can't do. There is nearly zero boilerplate code here!
+
+After completing this program, I am discovering that others have implemented similar ones
+in different languages (such as python 3 or PHP) in which this would be MUCH easier
+as they do not have to write their own str->int interpreter like I did (where the string is
+a mix of numbers and characters). The other programs are also much more basic, not offering
+any arguments and only generating a single key at a time. BASH can't even handle float's
+but at least its integer size is 128-bit, the equivalent of long long in C. These limitations
+made the program very informative to write. Professor Lethbridge has sanctioned me to submit
+assignment 5 written in BASH during the July 9 Tutorial.
+
+Please read this changelog for better understanding the architecture without having to interpret
+the different bits of code individually. It is unusually detailed, many times explaining not only
+the changes I made, but also why!
+
+
+0.[day][iteration]
+	[Changes]
+
+0.20
+	-First documented version. It was able to generate only OEM keys with number of keys as argument
+	-UNIX style arguments (for instance; -d for debug, -s for silent)
+	-Had a basic system of exit codes
+
+0.21
+	-Implemented -d for debug and -s for silent mode as argument options for the #main script
+
+0.30
+	-Turned #main script into main() function, essentially turning this entirely into function oriented
+	-Created initialization of arguments as variables (nessesary for functions to have access to them)
+
+0.31
+	-Removed init() function, instead requiring each operation to initialize itself
+	-Shrunk main() function for efficiency
+	-Changed the order with which main() handles arguments
+
+0.32
+	-Errors are now directed to stderr instead of stdout
+	-Removed BASH variable caller "$" where unnessesary
+	-Added GNU style arguments (for instance; --debug for debug mode)
+
+0.40
+	-Added help() function with a full blown manual
+	-Added license() function to display license at runtime
+	-Removed generate_debug() as it's become too difficult to maintain (no worries, it will come back)
+	-Renamed generate() to win95oem()
+	-Added abstract functions w95cd(), wntoem(), and wntcd()
+	-Added Java style toString() function
+	-Added SPDX-License-Identifier for automated identification of license (GPL3+)
+
+0.41
+	-MAJOR reimplementation of first and second segments of OEM key generation
+	-Fixed major bug disallowing the previous verson to run at all
+	-Implemented caller for validation of keys in main()
+	-Intoduced exit code for "Invalid argument: product type"
+	-main() now calls the appropriate function directly based on the first argument
+
+0.42
+	-Removed old deprecated code (for the first and second segments of OEM)
+	-Renamed w95oem() to oem() and w95cd() to cd()
+	-Removed main() handling of wntoem and wntcd as they are identical to the w95 counterparts
+	-Added abstract function cd() (not etirely abstract, it does a loop for testing purposes)
+
+0.43
+	-Finally implemented the cd() generating function, allowing for generation of all types of keys
+	-Modified help()'s list of examples to be more helpful
+
+0.44
+	-Moved help() below the payload of the script
+	-Reimplemented debug mode for OEM only as oem_debug()
+
+0.45
+	-Implemented brand new cd_debug() in the style of oem_debug()
+	-Modernized oem_debug() to fit the current more efficient version of oem()
+	-Multiple detailed improvements of main()
+	-Expanded on end-of-script-error adding details and email for bug reports
+	-Heavy use of "\t" in strings, to make the output easier to interpret
+
+0.46
+	-Corrected SPDX license identifier
+	-Added validate_oem() and validate_cd() abstract functions for
+		Uses the same algorithms as oem() and cd() but reverse engineered to validate
+		whether or not keys are correct
+	-Changed formatting options for displaying text in bold (has not been updated since v0.20)
+
+0.50
+	-Added Copyright mention to license()
+	-Added exit codes and appropriate placement of:
+		exit code 4 : Validator: invalid format
+		exit code 5 : Validator: invalid Key
+		exit code 6 : Internal check failed!
+	-Introduced global variable $KEY for convenient access by all functions
+		Global variables in BASH are quite common, and do not have the stigma they do in
+		other languages
+	-toString() now handles displaying and formatting of $KEY
+
+0.51
+	-Newlines "\n" are now handled by printf in toString() rather than individually
+	-Added "-v" and "--validate" as arguments
+	-Implemented version numbering by the $VERSION variable
+	-Partially restructured main()
+	-help() is now displayed when no arguments are given
+
+0.52
+	-Introduced new usage() function, displaying a short synopsis
+	-usage() is displayed instead of help()
+	-Added some elements of internal checking algorithm
+
+0.53
+	-Introduced check_oem() abstract function
+		validate_oem() checks whether a user inputed a valid key whereas
+		check_oem() would check whether the program is making internal errors during oem() key generation
+	-Implemented efficient error handling by validate_cd()
+	-Fixed bugs where check_cd() was trying to access variables that do not exist or were renamed
+	-Added $REPORT variable, which displays info on reporting bugs when they occur, instead of
+	 just displaying the appropriate error message
+
+0.54
+	-Using DeMorgen law, many test conditions are now simplified
+	-check_cd() completely removed as it will require a rewrite from scratch
+
+0.60
+	-New implementation of check_cd() with efficiency in mind
+	-validate_oem() and validate_cd() now test if certain segments are integers where they need to be
+	-Temporarily implemented a horrible inefficient way of solving the DECIMAL PROBLEM
+		BASH interprets numbers like 076 as octal numbers, not decimal. There is a way to force
+		decimal interpretation, however it is not suited for my program as it requires that strings
+		entirely consist digits, not a mix of digits and other characters
+	-Suppressed irrelevant output of internal BASH functions (specifically if statements)
+	-More "\t" handling outsourced to toString()
+
+0.61
+	-Removed some debugging code (not part of the debug functions) that was used for testing
+	-Reimplemented mathematical validation section of check_cd()
+
+0.62
+	-IMPLEMENTED validate_oem() AND check_oem() FOR THE FIRST TIME
+	-Rewrote integer testing with the help of DeMorgan law
+	-Added many #TODO statements where appropriate for future repairs
+	-Added bold text to error output where it's needed
+
+0.70
+	-Added $EMAIL variable making it easier to change report-to email (only has to be changed in 1 place)
+	-Added dead code explaining what functions do
+	-Removed old code which was not being used
+	-Changed the way validate_oem() and validate_cd() test for correct format
+	-Changed the way validate_oem() and validate_cd() display format errors
+	-Reinstated validation of $S2 segment in check_oem()
+	-Initialization now happens before Format validation in validate_cd() (reducing unhandled errors)
+	-check_cd() now has more efficient mathematical validation
+	-toString() now interacts with validate_oem() and validate_cd()
+	-Multiple miscellaneous fixes to printable strings throughout the entire script
+
+0.80
+	-Forked this project creating a new "uOttawa" compliant version
+	-Modified all string lines to not be longer than 80 characters
+	-Removed ALL textual mentions of Microsoft and their products
+	-Changed email from personal to uottawa
+	-Updated help(), usage(), and license()
+
+0.81
+	-Got rid of the underline of key output in debug mode
+	-Changed consistency of validate_oem() and validate_cd() stderr at invalid format
+	-Changed how validate_oem(), validate_cd(), check_oem(), and check_cd() obtain value $g
+	-Modified $REPORT string
+	-Listed changing while to for loops in main() as TODO's
+	-Introduced new C style zero_remover() function:
+		-Used for forcing decimal interpretation of integers
+		-Includes $DEC variable (input & output of function)
+		-Also includes $LENDEC variable (required for static length of $DEC before it is changed)
+	-EXPERIMENTALLY Implemented zero_remover() in check_cd()
+
+0.82
+	-FINALLY SOLVED THE DECIMAL PROBLEM IN ERROR CHECKING FUNCTIONS, PRESENT SINCE v0.50 and
+	 partially solved with a horrible method in v0.60	
+	-POSIX-COMPLIANCY: Replaced $(expr length $VAR) with ${#VAR} in validate_oem() and validate_cd()
+		This officially means the script no longer relies on GNU coreutils and should
+		run on MacOS and other POSIX-compliant systems that have BASH
+	-Removed deprecated code from check_cd()
+	-Implemented zero_remover() in validate_oem(), check_oem(), and validate_cd()
+	-Removed Format Validation from check_oem() and check_cd() making them 7.56 times as efficient!
+
+</pre>
+
+
