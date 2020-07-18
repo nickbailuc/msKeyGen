@@ -1,0 +1,85 @@
+REMAINING STUFF::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+upgrade $REPORT to report()
+	-the function will handle whether some arguments are empty AND;
+	-restructure for the part to report to be on its own line
+
+
+-------------------------
+
+move end-of-script error into the end of main()
+
+-------------------------
+
+reinstate all text regarding w products
+
+-------------------------
+
+Change all exit 0 strings in algorithms
+
+
+=======================
+
+turn zero_remover() into while loop
+	look into also removing $LENDEC
+
+
+-----------------------
+
+
+remove toString() and distribute all strings accordingly TEST EVERY COMMAND THEREAFTER
+
+
+----------------------::::::
+
+
+add GNU GPL3+ clause for command line programs: to be displayed in usage() and help() but not license()
+
+	msKeyGen  Copyright (C) 2020  Nick Bailuc
+	This program comes with ABSOLUTELY NO WARRANTY; for details type `$0 --warranty'.
+	This is free software, and you are welcome to redistribute it
+	under certain conditions; type `$0 --license' for details.
+
+------------
+Add this function, have it execute when -w or --warranty are used in $ARG1
+
+warranty()
+{ printf "
+msKeyGen is distributed WITHOUT ANY WARRANTY. The following
+sections from the GNU General Public License, version 3, should
+make that clear.
+
+  15. Disclaimer of Warranty.
+
+  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
+OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+  16. Limitation of Liability.
+
+  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+  17. Interpretation of Sections 15 and 16.
+
+  If the disclaimer of warranty and limitation of liability provided
+above cannot be given local legal effect according to their terms,
+reviewing courts shall apply local law that most closely approximates
+an absolute waiver of all civil liability in connection with the
+Program, unless a warranty or assumption of liability accompanies a
+copy of the Program in return for a fee.
+
+See <http://www.gnu.org/licenses/gpl-3.0.htmll>, for more details.\n\n"
+}

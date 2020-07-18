@@ -1,0 +1,105 @@
+class Keygen
+{
+  state
+  {
+    main
+    {
+      tooManyArguments -> exit_3;
+      no_args_given_or_ARG1_invalid -> usage;
+      h_or_help -> help;
+      l_or_license -> license;
+      v_or_validate -> validate;
+      oem -> generate_oem;
+      cd -> generate_cd;
+      oem_AND_debug -> oem_debug;
+      cd_AND_debug -> cd_debug;
+      N_given -> for_loop_at_N;
+      end_of_script_error -> exit_8;
+    }
+    usage { -> exit_1; }
+    help { -> exit_0; }
+    license { -> exit_0; }
+
+    validate
+    {
+      OEM_in_str -> validate_oem;
+      OEM_not_in_str-> validate_cd;
+    }
+
+    validate_oem { -> format_validation; }
+    validate_cd { -> format_validation; }
+
+    format_validation
+    {
+      true -> mathematical_validation;
+      false -> exit_4;
+      internal_error -> exit_6;
+    }
+
+    mathematical_validation
+    {
+      true -> exit_0;
+      false -> exit_5;
+    }
+
+    generate_cd
+    {
+      ARG_3_c_or_check -> check_cd;
+      display_key_without_checking -> toString;
+    }
+
+    generate_oem
+    {
+      ARG_3_c_or_check -> check_oem;
+      display_key_without_checking -> toString;
+    }
+
+    for_loop_at_N 
+    {
+      oem -> generate_oem;
+      cd -> generate_cd;
+      invalid_N -> exit_2;
+    }
+
+    check_oem
+    {
+      true -> toString;
+      false -> exit_7;
+    }
+
+    check_cd
+    {
+      true -> toString;
+      false -> exit_7;
+    }
+
+    oem_debug { -> exit_0; }
+    cd_debug { -> exit_0; }
+
+    toString
+    {
+      ARG_s_or_silent -> exit_0;
+      else -> print_enumeration_and_key_types;
+    }
+
+    print_enumeration_and_key_types { -> exit_0; }
+    exit_0{}
+    exit_1{}
+    exit_2{}
+    exit_3{}
+    exit_4{}
+    exit_5{}
+    exit_6 { -> report; }
+    exit_7 { -> report; }
+    exit_8 { -> report; }
+    report { -> collectData_displayErrorReportInfo; }
+  }
+}//$?[End_of_model]$?
+
+namespace -;
+
+
+class Keygen
+{
+  position 50 130 109 45;
+}
