@@ -1,33 +1,4 @@
 <pre>
-[DISCLAIMER]
-It should be noted that this was originally meant to generate Windows 95 OEM keys,
-however there is an intentional major error in the algorithm that makes the generated
-keys different enough such that they are invalid for Windows 95 activation. Furthermore,
-license keys are not subject to copyright or trademarking, and this does not include
-any proprietary code from Microsoft. Therefore, some bits and mentions of Microsoft
-are retained in the older versions of this program.
-
-The fundamental difference between the keys this program generates and those of Windows 95
-are that at the divisible-by-7 segment (here refered to as $S3) must have a digit sum
-divisible by 7, rather than a linear combination.
-
-My goal of writing this in BASH was to solidify my knowledge of the language, and learn
-more about what it can and can't do. There is nearly zero boilerplate code here!
-
-After completing this program, I am discovering that others have implemented similar ones
-in different languages (such as python 3 or PHP) in which this would be MUCH easier
-as they do not have to write their own str->int interpreter like I did (where the string is
-a mix of numbers and characters). The other programs are also much more basic, not offering
-any arguments and only generating a single key at a time. BASH can't even handle float's
-but at least its integer size is 128-bit, the equivalent of long long in C. These limitations
-made the program very informative to write. Professor Lethbridge has sanctioned me to submit
-assignment 5 written in BASH during the July 9 Tutorial.
-
-Please read this changelog for better understanding the architecture without having to interpret
-the different bits of code individually. It is unusually detailed, many times explaining not only
-the changes I made, but also why!
-
-
 0.[day][iteration]
 	[Changes]
 
@@ -193,6 +164,18 @@ the changes I made, but also why!
 	-Removed deprecated code from check_cd()
 	-Implemented zero_remover() in validate_oem(), check_oem(), and validate_cd()
 	-Removed Format Validation from check_oem() and check_cd() making them 7.56 times as efficient!
+
+0.90
+	-Merged uOttawa fork into master
+	-Added new warranty() function for displaying sections 15, 16, and 17 of GNU GPL3
+	-Upgraded $REPORT into report() with exhaustive argument handling
+	-Removed toString()
+	-Fixed bug in main() where erronious $ARG3 arguments weren't being handled
+	-Added many exit 0 instances in main under the "generate multiple keys" section
+	-Upgrade for loop to while loop in zero_remover()
+	-Removed 2 unessential variables in zero_remover() making it largely more efficient
+	-Added extra spacing in main()
+
 
 </pre>
 

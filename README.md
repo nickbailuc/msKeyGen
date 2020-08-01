@@ -1,16 +1,21 @@
-# ProductKeyGenerator
-Assignment 5: A unique set of algorithms to generate CD and OEM product keys with the help of
-BASH and its $RANDOM variable.
+# msKeyGen
+Generates CD keys for:
+- Windows 95
+- Windows NT 4.0
+- Office 95
+
+Generates OEM keys for:
+- Windows 95
+- Windows NT 4.0
 
 
 ## License: GNU GPL3+
 Copyright (C) 2020 Nick Bailuc, nick.bailuc@gmail.com
 
 This program uses the $RANDOM variable built into Bash in a sequence until it
-generates appropriate software license keys based on a unique alogrithm.
-It may be used in part or entirely by an organization as a method of DRM to
-verify a legal purchase of their software. The same algorithms may also be used
-to check the validity of a licence key.
+generates appropriate license keys for various Microsoft products based on a
+proprietary alogrithm. The same algorithms may also be used to check the
+validity of a licence key.
 
 	GNU General Public License version 3 or later
 	This program is free software: you can redistribute it and/or modify
@@ -53,10 +58,10 @@ to check the validity of a licence key.
 
 ## [ARG 1 PARAMETERS: TYPES OF KEYS]
 	oem
-		Generate Product ID (OEM) Keys.
+		Generate Product ID (OEM) Keys, used in Windows 95 and Windows NT 4.0
 
 	cd
-		Generate CD Keys.
+		Generate CD Keys used in Windows 95, Windows NT 4.0, and Office 95.
 
 	-v, --validate
 		Validate a CD/OEM key provided as an argument.

@@ -1,18 +1,19 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.82
+VERSION=0.90
 EMAIL="<nbail040@uottawa.ca>"
+DEFINITION="
+This program uses the \$RANDOM variable built into Bash in a sequence until it
+generates appropriate license keys for various Microsoft products based on a
+proprietary alogrithm. The same algorithms may also be used to check the
+validity of a licence key."
 
 # DISPLAYS GPL3+ LICENSE:
 license()
 { printf "${CB}$0 (Version $VERSION)${CN}
-Copyright (C) 2020 Nick Bailuc, $EMAIL
+msKeyGen Copyright (C) 2020 Nick Bailuc, $EMAIL
+$DEFINITION
 
-This program uses the \$RANDOM variable built into Bash in a sequence until it
-generates appropriate software license keys based on a proprietary alogrithm.
-It may be used in part or entirely by an organization as a method of DRM to
-verify a legal purchase of their software. The same algorithms may also be used
-to check the validity of a licence key.
 See $0 --help for more information.
 
 	\"GNU General Public License version 3 or later\"\n
@@ -279,7 +280,7 @@ validate_oem()
 
 	# Output:
 	if (( exitcode == 0 ))
-	then toString
+	then printf "This OEM key is genuine! It will work with Windows 95 / NT 4.0\n"
 	else
 		#Error handling:
 		printf "This OEM Key is invalid:\n" >&2
@@ -318,12 +319,14 @@ check_oem()
 	# Mathematical validation:
 	if (( S1 < 1 || S1 > 366 || S3 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed!" >&2
+		report
 		exit 7
 	elif (( S2 != 95 && S2 != 96 && S2 != 97 && S2 != 98 && S2 != 99 &&
 			S2 != 0 && S2 != 1 && S2 != 2 && S2 != 3 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed!" >&2
+		report
 		exit 7
 	else printf "\t✓\n"
 	fi
@@ -364,7 +367,7 @@ validate_cd()
 
 	# Output:
 	if (( exitcode == 0 ))
-	then toString
+	then printf "This CD key is genuine! It will work with Windows 95 / NT 4.0 / Office 95\n"
 	else
 		#Error handling:
 		printf "This CD Key is invalid!" >&2
@@ -381,7 +384,8 @@ validate_cd()
 			printf " Both segments ($S1 and $S2) are incorrect!\n" >&2
 			exit 5
 		else
-			printf "\n${CB}Validator: internal error! $REPORT${CN}" >&2
+			printf "\n${CB}Validator: internal error!" >&2
+			report
 			exit 6
 		fi
 	fi
@@ -404,7 +408,8 @@ check_cd()
 	if (( S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ||
 		S2 % 7 != 0 || g == 0 || g == 8 || g == 9 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed! $REPORT${CN}" >&2
+		printf "\t✕\n${CB}Internal check algorithm failed!" >&2
+		report
 		exit 7
 	else printf "\t✓\n"
 	fi
@@ -414,35 +419,37 @@ check_cd()
 # STRIP INTEGERS OF LEADING ZEROS C STYLE:
 zero_remover()
 {
-	LENDEC=${#DEC}
-	for (( null = 0; null < $LENDEC; null++ ))
-	do
-		if (( ${DEC:0:1} == 0 ))
-		then DEC=${DEC:1:$LENDEC}
-		fi
+	while [[ ${DEC:0:1} == "0" ]]
+	do DEC=${DEC:1:${#DEC}}
 	done
 }
 
 
-# GENERATE APPROPRIATE STDOUT STRING ON SUCCESS JAVA STYLE:
-toString()
+# HANDLE AND DISPLAY DATA FOR REQUESTING USER TO REPORT A PROBLEM:
+report()
 {
-	if [[ $ARG1 == "oem" ]]
-	then printf "OEM Product ID #$i:\t\t"
-	elif [[ $ARG1 == "cd" ]]
-	then printf "CD Key #$i:\t\t"
-	elif [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
+	printf "\nPlease report the following to $EMAIL
+	version = $VERSION" >&2
+	if [[ $ARG1 != "" ]]
 	then
-		if [[ $KEY_TYPE == "OEM" ]]
-		then printf "This OEM key is genuine!\n"
-		else printf "This CD key is genuine!\n"
+		printf "\n\tARG1 = $ARG1" >&2
+		if [[ $ARG2 != "" ]]
+		then
+			printf "\n\tARG2 = $ARG2" >&2
+			if [[ $ARG3 != "" ]]
+			then
+				printf "\n\tARG3 = $ARG3" >&2
+				if [[ $ARG4 != "" ]]
+				then printf "\n\tARG4 = $ARG4" >&2
+				fi
+			fi
 		fi
 	fi
+	printf "${CN}\n" >&2
 }
 
 
-# MAIN FUNCTION RESPONCIBLE FOR HANDLING ARGUMENTS, REPEATED GENERATIONS,
-# AND PIPING DATA BETWEEN FUNCTIONS:
+# MAIN FUNCTION RESPONCIBLE FOR HANDLING ARGUMENTS AND REPEATED GENERATIONS:
 main()
 {
 	# Too many arguments validation:
@@ -450,9 +457,11 @@ main()
 	then
 		printf "Too many arguments! Try:\n\t $0 --help\n" >&2
 		exit 3
-	# Argument 1 validation:
+
+	# Argument 1 handling:
 	elif [[ $ARG1 != "oem" && $ARG1 != "cd" && $ARG1 != "-h" && $ARG1 != "--help" &&
-		$ARG1 != "-l" && $ARG1 != "--license" && $ARG1 != "-v" && $ARG1 != "--validate" ]]
+		$ARG1 != "-l" && $ARG1 != "--license" && $ARG1 != "-v" && $ARG1 != "--validate" &&
+		$ARG1 != "-w" && $ARG1 != "--warranty" ]]
 	then
 		usage
 		exit 1
@@ -463,6 +472,10 @@ main()
 	elif [[ $ARG1 == "-l" || $ARG1 == "--license" ]]
 	then
 		license
+		exit 0
+	elif [[ $ARG1 == "-w" || $ARG1 == "--warranty" ]]
+	then
+		warranty
 		exit 0
 	elif [[ $ARG1 == "-v" || $ARG1 == "--validate" ]]
 	then
@@ -477,6 +490,7 @@ main()
 
 	# License key Generation:
 	else
+
 		# Debug mode:
 		if [[ $ARG2 == "-d" || $ARG2 == "--debug" ]]
 		then
@@ -487,11 +501,15 @@ main()
 			else exit 2
 			fi
 			exit 0
+
 		# Single key mode:
 		elif [[ $ARG2 == "" ]]
 		then
 			i=1
-			toString
+			if [[ $ARG1 == "oem" ]]
+			then printf "OEM Product ID #$i:\t\t"
+			else printf "CD Key #$i:\t\t"
+			fi
 			$ARG1
 			printf "$KEY\n"
 			exit 0
@@ -499,6 +517,7 @@ main()
 		then
 			printf "Invalid number-of-keys input! Try:\n\t $0 --help\n" >&2
 			exit 2
+
 		# Generate multiple keys:
 		else
 			if [[ $ARG3 == "-s" || $ARG3 == "--silent" ]]
@@ -508,37 +527,60 @@ main()
 					$ARG1
 					printf "$KEY\n"
 				done
+				exit 0
 			elif [[ $ARG3 == "-c" || $ARG3 == "--check" ]]
 			then
 				if [[ $ARG1 == "oem" ]]
 				then
 					for (( i = 1; i <= ARG2; i++ ))
 					do
-						toString
+						printf "OEM Product ID #$i:\t\t"
 						$ARG1
 						printf $KEY
 						check_oem
 					done
+					exit 0
 				else
 					for (( i = 1; i <= ARG2; i++ ))
 					do
-						toString
+						printf "CD Key #$i:\t\t"
 						$ARG1
 						printf $KEY
 						check_cd
 					done
+					exit 0
+				fi
+			elif [[ $ARG3 == "" ]]
+			then
+				if [[ $ARG1 == "oem" ]]
+				then
+					for (( i = 1; i <= ARG2; i++ ))
+					do
+						printf "OEM Product ID #$i:\t\t"
+						$ARG1
+						printf "$KEY\n"
+					done
+					exit 0
+				else
+					for (( i = 1; i <= ARG2; i++ ))
+					do
+						printf "CD Key #$i:\t\t"
+						$ARG1
+						printf "$KEY\n"
+					done
+					exit 0
 				fi
 			else
-				for (( i = 1; i <= ARG2; i++ ))
-				do
-					toString
-					$ARG1
-					printf "$KEY\n"
-				done
+				printf "$ARG3 is not a valid input! Try:\n\t $0 --help\n" >&2
+				#TODO exit 3 for invalid arg3 input
 			fi
-			exit 0
 		fi
 	fi
+
+	# End of script error:
+	printf "\n${CB}Congratulations, you have found an end-of-script error!" >&2
+	report
+	exit 8
 }
 
 
@@ -548,15 +590,12 @@ help()
 printf "\
 ${CB}$0 (Version $VERSION)${CN}
 
-Copyright (C) 2020 Nick Bailuc, $EMAIL
+msKeyGen Copyright (C) 2020 Nick Bailuc, $EMAIL
+$DEFINITION
 
-This program uses the \$RANDOM variable built into Bash in a sequence until it
-generates appropriate software license keys based on a proprietary alogrithm.
-It may be used in part or entirely by an organization as a method of DRM to
-verify a legal purchase of their software. The same algorithms may also be used
-to check the validity of a licence key.
-See $0 --help for more information.
-
+This program comes with ABSOLUTELY NO WARRANTY; for details type $0 --warranty.
+This is free software, and you are welcome to redistribute it
+under certain conditions; type $0 --license for details.
 
 ${CB}[SYNOPSIS]
 	$0 ARG1 ARG2 ARG3
@@ -581,10 +620,10 @@ ${CN}		Generate 5 keys silently (only output the key).
 
 ${CB}[ARG 1 PARAMETERS: TYPES OF KEYS]
 	oem
-${CN}		Generate Product ID (OEM) Keys.
+${CN}		Generate Product ID (OEM) Keys, used in Windows 95 and Windows NT 4.0.
 
 ${CB}	cd
-${CN}		Generate CD Keys.
+${CN}		Generate CD Keys used in Windows 95, Windows NT 4.0, and Office 95.
 
 ${CB}	-v, --validate
 ${CN}		Validate a CD/OEM key provided as an argument.
@@ -649,19 +688,26 @@ usage()
 {
 printf "\
 ${CB}$0 (Version $VERSION), see CHANGELOG.html for more information!
+${CN}$DEFINITION
 
-Copyright (C) 2020 Nick Bailuc, $EMAIL
+See $0 --help for more information.
+
+msKeyGen Copyright (C) 2020 Nick Bailuc, $EMAIL
 This is free software; see the source code for copying conditions.
 There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
 
+This program comes with ABSOLUTELY NO WARRANTY; for details type $0 --warranty.
+This is free software, and you are welcome to redistribute it
+under certain conditions; type $0 --license for details.
+${CB}
 SYNOPSIS:	$0 ARG1 ARG2 ARG3
 Minimal Usage:${CB}	$0 ARG1
 
 ${CB}[ARG 1 PARAMETERS: TYPES OF KEYS]
 
-	oem${CN}	Generate Product ID (OEM) Keys.${CB}
-	cd${CN}	Generate CD Keys.${CB}
+	oem${CN}	Generate Product ID (OEM) Keys, used in Windows 95 and Windows NT 4.0.${CB}
+	cd${CN}	Generate CD Keys used in Windows 95, Windows NT 4.0, and Office 95.${CB}
 	-v, --validate	${CN}Validate a CD/OEM key provided as an argument.
 ${CB}	-h, --help	${CN}Show this help and exit 0.
 ${CB}	-l, --license	${CN}Display license
@@ -689,8 +735,47 @@ Try $0 --help for more information.\n"
 }
 
 
-REPORT="\nPlease report this to $EMAIL along with
-the version ($VERSION) and arguments used ($1 $2 $3).\n"
+# DISPLAYS WARRANTY INFORMATION, AS RECOMMENDED BY THE GNU PROJECT:
+warranty()
+{ printf "
+msKeyGen is distributed WITHOUT ANY WARRANTY. The following
+sections from the GNU General Public License, version 3, should
+make that clear.
+
+  15. Disclaimer of Warranty.
+
+  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT WARRANTY
+OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+  16. Limitation of Liability.
+
+  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+  17. Interpretation of Sections 15 and 16.
+
+  If the disclaimer of warranty and limitation of liability provided
+above cannot be given local legal effect according to their terms,
+reviewing courts shall apply local law that most closely approximates
+an absolute waiver of all civil liability in connection with the
+Program, unless a warranty or assumption of liability accompanies a
+copy of the Program in return for a fee.
+
+See <http://www.gnu.org/licenses/gpl-3.0.htmll>, for more details.\n\n"
+}
 
 
 # Initialization:
@@ -701,7 +786,3 @@ ARG4=$4
 CN=$(tput sgr0)
 CB=$(tput bold)
 main
-
-# End of script error:
-printf "\nCongratulations, you have found an end-of-script error! $REPORT" >&2
-exit 8
