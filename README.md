@@ -114,4 +114,4 @@ validity of a licence key.
 	8 : End of script!
 		The script is set to exit 0 after completion of generation. If the script
 		reaches the end (outside of main() function) the script will exit 8
-		indicating an error has occured!
+		indicating an error has occurred!

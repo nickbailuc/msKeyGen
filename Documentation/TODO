@@ -1,10 +1,1 @@
-
--------------------------
-
 MACOS COMPATIBILITY (this will include old bash version compatibility)
-
--------------------------
-
-bump exit codes to include arg3 invalid
-
-

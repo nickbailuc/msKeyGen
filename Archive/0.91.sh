@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.92
+VERSION=0.91
 EMAIL="<nbail040@uottawa.ca>"
 DEFINITION="
 This program uses the \$RANDOM variable built into Bash in a sequence until it
