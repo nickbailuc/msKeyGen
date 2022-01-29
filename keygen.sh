@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-VERSION=0.92
+VERSION=1.00
 EMAIL="<nick.bailuc@gmail.com>"
 DEFINITION="
 This program uses the \$RANDOM variable built into Bash in a sequence until it
@@ -10,7 +10,8 @@ validity of a licence key."
 
 # DISPLAYS GPL3+ LICENSE:
 license()
-{ printf "${CB}$0 (Version $VERSION)${CN}
+{ printf "\
+$B$0 (Version $VERSION)$N
 msKeyGen Copyright (C) 2020 Nick Bailuc, $EMAIL
 $DEFINITION
 
@@ -77,25 +78,25 @@ oem()
 # GENERATE OEM KEY WITH (VERBOSE) DEBUGGING, PRINTING EVERY VARIABLE AT EACH STEP:
 oem_debug()
 {
-	printf "${CB}Initialization complete!\n\n"
+	printf "$BInitialization complete!\n\n"
 	# 3-digit day of year:
-	printf "Determining 3-digit day of year:${CN}\n"
+	printf "Determining 3-digit day of year:$N\n"
 	D=$(( RANDOM % 366 + 1 ))
-	printf "\tWorking with fragmentary 3-digit day of year $D\n\n${CN}"
+	printf "\tWorking with fragmentary 3-digit day of year $D\n\n$N"
 	if (( D < 10 ))
 	then
-		printf "\tDay of year confirmed to be single-digit. Adding two zero's\n"
+		printf "\tDay of year confirmed to be single-digit. Adding two zeros\n"
 		D=00$D
 	elif (( D < 100 ))
 	then
 		printf "\tDay of year confirmed to be double-digit. Adding one zero\n"
 		D=0$D
 	fi
-	printf "${CB}\t3-digit day of year determined to be $D!\n\n"
+	printf "$B\t3-digit day of year determined to be $D!\n\n"
 
 	# 2-digit year:
 	Y=$RANDOM
-	printf "Determining 2-digit year:${CN}\n"
+	printf "Determining 2-digit year:$N\n"
 	while (( Y > 3 && Y < 95)) || (( Y > 99 ))
 	do
 		Y=$(( RANDOM % 100 ))
@@ -104,10 +105,10 @@ oem_debug()
 	if (( Y < 4 ))
 	then Y=0$Y
 	fi
-	printf "${CB}\t2-digit year determined to be $Y!\n\n"
+	printf "$B\t2-digit year determined to be $Y!\n\n"
 
 	# 7-digit "divisible by 7" segment:
-	printf "Initiating divisible by 7 segment:${CN}\n"
+	printf "Initiating divisible by 7 segment:$N\n"
 	a=0; b=0; c=0; d=0; e=0; f=1
 	while (( ( a + b + c + d + e + f ) % 7 != 0 ))
 	do
@@ -124,20 +125,20 @@ oem_debug()
 		then printf " which is not divisible by 7!\n\n"
 		fi
 	done
-	printf "${CB}\n\t$(( a + b + c + d + e + f)) is divisible by 7!\n\n"
+	printf "$B\n\t$(( a + b + c + d + e + f)) is divisible by 7!\n\n"
 
 	# 5-digit "random" segment:
-	printf "Determining 5-digit segment:${CN}\n"
+	printf "Determining 5-digit segment:$N\n"
 	r1=$(( RANDOM % 10 ))
 	r2=$(( RANDOM % 10 ))
 	r3=$(( RANDOM % 10 ))
 	r4=$(( RANDOM % 10 ))
 	r5=$(( RANDOM % 10 ))
 	printf "\tr1 = $r1\n\tr2 = $r2\n\tr3 = $r3\n\tr4 = $r4\n\tr5 = $r5\n"
-	printf "${CB}\t5-digit segment determined to be $r1$r2$r3$r4$r5!\n\n"
+	printf "$B\t5-digit segment determined to be $r1$r2$r3$r4$r5!\n\n"
 
 	# Export Product Key:
-	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
+	printf "$BParsing variables and exporting to stdout:$N\n\n"
 	printf "OEM Product ID:\t"
 	printf "$D$Y-OEM-0$a$b$c$d$e$f-$r1$r2$r3$r4$r5\n\n"
 }
@@ -179,9 +180,9 @@ cd()
 # GENERATE CD KEY WITH (VERBOSE) DEBUGGING, PRINTING EVERY VARIABLE AT EACH STEP:
 cd_debug()
 {
-	printf "${CB}Initialization complete!\n\n"
+	printf "$BInitialization complete!\n\n"
 	# 3-digit day of year:
-	printf "Determining 3-digit segment:${CN}\n"
+	printf "Determining 3-digit segment:$N\n"
 	# 3-digit segment:
 	S=$(( RANDOM % 1000 ))
 	printf "\tTrying $S\n"
@@ -193,22 +194,22 @@ cd_debug()
 		then printf "Combinations of the set {333, 444, ..., 999} cannot be used!\n"
 		fi
 	done
-	printf "\t${CB}Fragmentary 3-digit segment is $S!\n${CN}"
+	printf "\t$BFragmentary 3-digit segment is $S!\n$N"
 	if (( S < 10))
 	then
-		printf "\t3-digit segment confirmed to be single-digit. Adding two zero's\n"
+		printf "\t3-digit segment confirmed to be single-digit. Adding two zeros\n"
 		S=00$S
 	elif (( S < 100 ))
 	then
 		printf "\t3-digit segment confirmed to be double-digit. Adding one zero\n"
 		S=0$S
 	fi
-	printf "${CB}\t3-digit segment determined to be $S!\n\n"
+	printf "$B\t3-digit segment determined to be $S!\n\n"
 
 	# 7-digit "divisible by 7" segment:
-	printf "Initiating divisible by 7 segment:${CN}\n"
+	printf "Initiating divisible by 7 segment:$N\n"
 	a=0; b=0; c=0; d=0; e=0; f=0; g=1
-	while (( ( a + b + c + d + e + f + g) % 7 != 0 ))
+	while (( ( a + b + c + d + e + f + g ) % 7 != 0 ))
 	do
 		a=$(( RANDOM % 10 ))
 		b=$(( RANDOM % 10 ))
@@ -224,11 +225,11 @@ cd_debug()
 		then printf " which is not divisible by 7!\n\n"
 		fi
 	done
-	printf "${CB}\n\t$(( a + b + c + d + e + f)) is divisible by 7!\n\n"
+	printf "$B\n\t$(( a + b + c + d + e + f)) is divisible by 7!\n\n"
 
 
 	# Export CD Key:
-	printf "${CB}Parsing variables and exporting to stdout:${CN}\n\n"
+	printf "$BParsing variables and exporting to stdout:$N\n\n"
 	printf "CD Key:\t"
 	printf "$S-$a$b$c$d$e$f$g\n\n"
 }
@@ -250,7 +251,6 @@ validate_oem()
 	fi
 
 	# Initialization:
-	KEY_TYPE="OEM"
 	DEC=${ARG2:0:3}
 	zero_remover
 	S1=$DEC
@@ -321,13 +321,13 @@ check_oem()
 	if (( ( ${S3:0:1} + ${S3:1:1} + ${S3:2:1} + ${S3:3:1} + ${S3:4:1} + ${S3:5:1} + 0 ) % 7 != 0 ||
 		S1 < 1 || S1 > 366 || g == 0 || g == 8 || g == 9 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed!" >&2
+		printf "\t✕\n$BInternal check algorithm failed!" >&2
 		report
 		exit 8
 	elif (( S2 != 95 && S2 != 96 && S2 != 97 && S2 != 98 && S2 != 99 &&
 			S2 != 0 && S2 != 1 && S2 != 2 && S2 != 3 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed!" >&2
+		printf "\t✕\n$BInternal check algorithm failed!" >&2
 		report
 		exit 8
 	else printf "\t✓\n"
@@ -350,7 +350,6 @@ validate_cd()
 	fi
 
 	# Initialization:
-	KEY_TYPE="CD"
 	DEC=${ARG2:0:3}
 	zero_remover
 	S1=$DEC
@@ -387,7 +386,7 @@ validate_cd()
 			printf " Both segments ($S1 and $S2) are incorrect!\n" >&2
 			exit 6
 		else
-			printf "\n${CB}Validator: internal error!" >&2
+			printf "\n$BValidator: internal error!" >&2
 			report
 			exit 7
 		fi
@@ -412,7 +411,7 @@ check_cd()
 		S1 == 333 || S1 == 444 || S1 == 555 || S1 == 666 || S1 == 777 || S1 == 888 || S1 == 999 ||
 		g == 0 || g == 8 || g == 9 ))
 	then
-		printf "\t✕\n${CB}Internal check algorithm failed!" >&2
+		printf "\t✕\n$BInternal check algorithm failed!" >&2
 		report
 		exit 8
 	else printf "\t✓\n"
@@ -420,7 +419,7 @@ check_cd()
 }
 
 
-# STRIP INTEGERS OF LEADING ZEROS C STYLE:
+# STRIP INTEGERS OF LEADING ZEROS:
 zero_remover()
 {
 	while [[ ${DEC:0:1} == "0" ]]
@@ -449,11 +448,11 @@ report()
 			fi
 		fi
 	fi
-	printf "${CN}\n" >&2
+	printf "$N\n" >&2
 }
 
 
-# MAIN FUNCTION RESPONCIBLE FOR HANDLING ARGUMENTS AND REPEATED GENERATIONS:
+# MAIN FUNCTION RESPONSIBLE FOR HANDLING ARGUMENTS AND REPEATED GENERATIONS:
 main()
 {
 	# Too many arguments validation:
@@ -580,7 +579,7 @@ main()
 	fi
 
 	# End of script error:
-	printf "\n${CB}Congratulations, you have found an end-of-script error!" >&2
+	printf "\n$BCongratulations, you have found an end-of-script error!" >&2
 	report
 	exit 9
 }
@@ -590,7 +589,7 @@ main()
 help()
 {
 printf "\
-${CB}$0 (Version $VERSION)${CN}
+$B$0 (Version $VERSION)$N
 
 msKeyGen Copyright (C) 2020 Nick Bailuc, $EMAIL
 $DEFINITION
@@ -599,72 +598,82 @@ This program comes with ABSOLUTELY NO WARRANTY; for details type $0 --warranty.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type $0 --license for details.
 
-${CB}[SYNOPSIS]
+$B[SYNOPSIS]
 	$0 ARG1 ARG2 ARG3
 
 	Minimal Usage:
-${CB}	$0 ARG1
+$B	$0 ARG1
 	
 	Examples:
-	$0 cd${CN}
-		Generate a single CD key
+	$0 cd$N
+		Generate a single CD key.
 
-${CB}	$0 oem --debug
-${CN}		Show the 4-algorithm step by step process of generating an OEM key
+$B	$0 oem --debug
+$N		Show the 4-algorithm step by step process of generating an OEM key.
 
-${CB}	$0 oem 2**5 --silent
-${CN}		Calculate (2**5 = 32); generate 32 keys without enumeration
+$B	$0 oem 2**5 --silent
+$N		Calculate (2**5 = 32); generate 32 keys without enumeration.
 
-${CB}	$0 cd 5 --silent > keys.txt
-${CN}		Generate 5 keys silently (only output the key).
-		Then save the output in the file keys.txt
+$B	$0 cd 5 --silent > keys.txt
+$N		Generate 5 keys silently (only output the key).
+		Then save the output in the file keys.txt.
+
+$B	$0 oem 30000 -c
+$N		Generate 30000 oem keys and check each one after generation
+		for computer errors.
+
+$B	$0 -v KEY
+$N		Validate OEM or CD key provided by the user.
 
 
-${CB}[ARG 1 PARAMETERS: TYPES OF KEYS]
+$B[ARG 1 PARAMETERS: TYPES OF KEYS]
 	oem
-${CN}		Generate Product ID (OEM) Keys, used in Windows 95 and Windows NT 4.0.
+$N		Generate Product ID (OEM) Keys, used in Windows 95 and Windows NT 4.0.
 
-${CB}	cd
-${CN}		Generate CD Keys used in Windows 95, Windows NT 4.0, and Office 95.
+$B	cd
+$N		Generate CD Keys used in Windows 95, Windows NT 4.0, and Office 95.
 
-${CB}	-v, --validate
-${CN}		Validate a CD/OEM key provided as an argument.
+$B	-v, --validate
+$N		Validate an OEM/CD key provided as an argument.
 
-${CB}	-h, --help
-${CN}		Show this help and exit 0.
+$B	-h, --help
+$N		Show this help and exit 0.
 
-${CB}	-l, --license
-${CN}		Display license
+$B	-l, --license
+$N		Display license
+
+$B	-w, --warranty
+$N		Display warranty information relating to this program
 
 
-${CB}[ARG 2 PARAMETER: NUMBER OF KEYS] (optional)
-${CN}	This parameter may be omitted entirely, in which case only 1 key will be generated!
+$B[ARG 2 PARAMETER: NUMBER OF KEYS] (optional)
+$N	This parameter may be omitted entirely, in which case only 1 key will be generated!
 
-${CB}	N${CN} ∈ (1, 2**63-1)
+$B	N$N ∈ (1, 2**63-1)
 		Enter any integer between 1 and 9223372036854775807 representing
 		how many keys to be generated. A Bash integer calculation may also be entered!
 
-${CB}	KEY${CN}
+$B	KEY$N
 		If -v is used, you must enter an OEM or CD key to validate.
 
-${CB}	-d, --debug
-${CN}		Useful for develpers, or to learn how the program works
+$B	-d, --debug
+$N		Useful for develpers, or to learn how the program works.
 
 
-${CB}[ARG 3 PARAMETER: POWER TOOLS] (optional)
-${CN}	This can only be used if an integer N was also given!
+$B[ARG 3 PARAMETER: POWER TOOLS] (optional)
+$N	This can only be used if an integer N was also given!
 
-${CB}	-s, --silent
-${CN}		Only output license keys, no enumeration
+$B	-s, --silent
+$N		Only output license keys, no enumeration.
 
-${CB}	-c, --check
-${CN}		Uses internal validation algorithm to confirm the newly generated
+$B	-c, --check
+$N		Uses internal validation algorithm to confirm the newly generated
 		keys are valid. (Essentially the generate algorithms reverse-engineered).
 		This process is certain to be slower, however can detect internal script errors.
 
 
-${CB}[EXIT CODES]
-${CN}	0 : Success
+$B[EXIT CODES]
+$N	0 : Success
 
 	Argument Errors:
 	1 : Argument 1 invalid: product type / help / version
@@ -690,8 +699,8 @@ ${CN}	0 : Success
 usage()
 {
 printf "\
-${CB}$0 (Version $VERSION), see CHANGELOG.html for more information!
-${CN}$DEFINITION
+$B$0 (Version $VERSION), see CHANGELOG.html for more information!
+$N$DEFINITION
 
 See $0 --help for more information.
 
@@ -703,34 +712,35 @@ FITNESS FOR A PARTICULAR PURPOSE.
 This program comes with ABSOLUTELY NO WARRANTY; for details type $0 --warranty.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type $0 --license for details.
-${CB}
+$B
 SYNOPSIS:	$0 ARG1 ARG2 ARG3
-Minimal Usage:${CB}	$0 ARG1
+Minimal Usage:$B	$0 ARG1
 
-${CB}[ARG 1 PARAMETERS: TYPES OF KEYS]
+$B[ARG 1 PARAMETERS: TYPES OF KEYS]
 
-	oem${CN}	Generate Product ID (OEM) Keys, used in Windows 95 and Windows NT 4.0.${CB}
-	cd${CN}	Generate CD Keys used in Windows 95, Windows NT 4.0, and Office 95.${CB}
-	-v, --validate	${CN}Validate a CD/OEM key provided as an argument.
-${CB}	-h, --help	${CN}Show this help and exit 0.
-${CB}	-l, --license	${CN}Display license
+	oem$N	Generate Product ID (OEM) Keys, used in Windows 95 and Windows NT 4.0.$B
+	cd$N	Generate CD Keys used in Windows 95, Windows NT 4.0, and Office 95.$B
+	-v, --validate	$NValidate a CD/OEM key provided as an argument.
+$B	-h, --help	$NShow this help and exit 0.
+$B	-l, --license	$NDisplay license.
+$B	-w, --warranty	$NDisplay warranty information relating to this program.
 
-${CB}[ARG 2 PARAMETER: NUMBER OF KEYS] (optional)
-${CN}	This parameter may be omitted entirely, in which case only 1 key will be generated!
+$B[ARG 2 PARAMETER: NUMBER OF KEYS] (optional)
+$N	This parameter may be omitted entirely, in which case only 1 key will be generated!
 
-${CB}	N${CN} ∈ (1, 2**63-1)
+$B	N$N ∈ (1, 2**63-1)
 		Enter any integer between 1 and 9223372036854775807 (2**63 -1) representing
 		how many keys to be generated. A Bash integer calculation may also be entered!
 
-${CB}	KEY${CN}	If -v is used, you must enter an OEM or CD key to validate.
+$B	KEY$N	If -v is used, you must enter an OEM or CD key to validate.
 
-${CB}	-d, --debug${CN}	Useful for develpers, or to learn how the program works
+$B	-d, --debug$N	Useful for develpers, or to learn how the program works
 
-${CB}[ARG 3 PARAMETER: POWER TOOLS] (optional)
-${CN}	This can only be used if an integer N was also given!
+$B[ARG 3 PARAMETER: POWER TOOLS] (optional)
+$N	This can only be used if an integer N was also given!
 
-${CB}	-s, --silent${CN}	Only output license keys, no enumeration
-${CB}	-c, --check${CN}	Uses internal validation algorithm to confirm the newly generated keys are
+$B	-s, --silent$N	Only output license keys, no enumeration
+$B	-c, --check$N	Uses internal validation algorithm to confirm the newly generated keys are
 			valid. (Essentially the algorithms reverse-engineered). This process
 			is certain to be slower, however can detect internal script errors.
 
@@ -786,6 +796,6 @@ ARG1=$1
 ARG2=$2
 ARG3=$3
 ARG4=$4
-CN=$(tput sgr0)
-CB=$(tput bold)
+N=$(tput sgr0)
+B=$(tput bold)
 main
